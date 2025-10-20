@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/hhanh00/zcvote/compare/zcvote-v1.0.1...zcvote-v1.1.0) (2025-10-20)
+
+
+### Features
+
+* create database ([#5](https://github.com/hhanh00/zcvote/issues/5)) ([6b97085](https://github.com/hhanh00/zcvote/commit/6b970858b42f91fe711d5ede41b3518b9d3fd567))
+
 ## [1.0.1](https://github.com/hhanh00/zcvote/compare/zcvote-v1.0.0...zcvote-v1.0.1) (2025-10-20)
 
 
