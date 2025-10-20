@@ -32,15 +32,15 @@ runs:
       shell: bash
       run: |
         fastforge package --platform=linux --targets=deb,appimage
-    - name: Make ISO
-      if: ${{ inputs.arch == 'x86_64' }}
-      id: iso
-      shell: bash
-      run: |
-        cp -r build/linux/x64/release/bundle misc/
-        cd misc
-        docker build -t iso_builder -f iso.dockerfile .
-        docker run --rm --privileged -v ".":/iso/out iso_builder bash -c "mkarchiso -w w -o out p"
+    # - name: Make ISO
+    #   if: ${{ inputs.arch == 'x86_64' }}
+    #   id: iso
+    #   shell: bash
+    #   run: |
+    #     cp -r build/linux/x64/release/bundle misc/
+    #     cd misc
+    #     docker build -t iso_builder -f iso.dockerfile .
+    #     docker run --rm --privileged -v ".":/iso/out iso_builder bash -c "mkarchiso -w w -o out p"
     - name: Move to outdir
       id: out
       shell: bash
