@@ -1,0 +1,6 @@
+# script_template: "setup.iss"
+app_id: 75720BEC-031F-4378-816B-B72A551F5DCD
+display_name: zcvote
+create_desktop_icon: true
+locales:
+  - en
