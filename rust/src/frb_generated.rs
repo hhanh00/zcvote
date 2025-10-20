@@ -38,7 +38,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -494909227;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 88007368;
 
 // Section: executor
 
@@ -46,7 +46,7 @@ flutter_rust_bridge::frb_generated_default_handler!();
 
 // Section: wire_funcs
 
-fn wire__crate__api__app__App_connect_impl(
+fn wire__crate__api__app__App_new_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -54,7 +54,7 @@ fn wire__crate__api__app__App_connect_impl(
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "App_connect",
+            debug_name: "App_new",
             port: Some(port_),
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
         },
@@ -73,7 +73,7 @@ fn wire__crate__api__app__App_connect_impl(
             move |context| async move {
                 transform_result_sse::<_, flutter_rust_bridge::for_generated::anyhow::Error>(
                     (move || async move {
-                        let output_ok = crate::api::app::App::connect(&api_db_name).await?;
+                        let output_ok = crate::api::app::App::new(&api_db_name).await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -273,7 +273,7 @@ fn pde_ffi_dispatcher_primary_impl(
 ) {
     // Codec=Pde (Serialization + dispatch), see doc to use other codecs
     match func_id {
-        1 => wire__crate__api__app__App_connect_impl(port, ptr, rust_vec_len, data_len),
+        1 => wire__crate__api__app__App_new_impl(port, ptr, rust_vec_len, data_len),
         2 => wire__crate__api__app__App_test_impl(port, ptr, rust_vec_len, data_len),
         3 => wire__crate__api__app__init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),

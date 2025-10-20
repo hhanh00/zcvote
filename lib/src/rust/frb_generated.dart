@@ -66,7 +66,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => -494909227;
+  int get rustContentHash => 88007368;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -77,7 +77,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
-  Future<App> crateApiAppAppConnect({required String dbName});
+  Future<App> crateApiAppAppNew({required String dbName});
 
   Future<int> crateApiAppAppTest({required App that});
 
@@ -99,7 +99,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
-  Future<App> crateApiAppAppConnect({required String dbName}) {
+  Future<App> crateApiAppAppNew({required String dbName}) {
     return handler.executeNormal(
       NormalTask(
         callFfi: (port_) {
@@ -117,15 +117,15 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
               sse_decode_Auto_Owned_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApp,
           decodeErrorData: sse_decode_AnyhowException,
         ),
-        constMeta: kCrateApiAppAppConnectConstMeta,
+        constMeta: kCrateApiAppAppNewConstMeta,
         argValues: [dbName],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiAppAppConnectConstMeta =>
-      const TaskConstMeta(debugName: "App_connect", argNames: ["dbName"]);
+  TaskConstMeta get kCrateApiAppAppNewConstMeta =>
+      const TaskConstMeta(debugName: "App_new", argNames: ["dbName"]);
 
   @override
   Future<int> crateApiAppAppTest({required App that}) {

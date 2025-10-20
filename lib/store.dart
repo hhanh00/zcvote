@@ -11,7 +11,7 @@ abstract class AppStoreBase with Store {
   late App app;
 
   static Future<void> init(String dbName) async {
-    final app = await App.connect(dbName: dbName);
+    final app = await App.newInstance(dbName: dbName);
     appStore.app = app;
   }
 
