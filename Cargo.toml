@@ -1,0 +1,39 @@
+[workspace]
+resolver = "2"
+members = [
+    "rust",
+    "zcash-vote2",
+]
+
+[workspace.dependencies]
+anyhow = "1.0.100"
+byteorder = "1.5.0"
+futures = "0.3.31"
+hex = "0.4.3"
+
+env_logger = "0.11.8"
+orchard = { version = "0.3.0", features = ["vote"] }
+serde = "1.0.228"
+serde_json = "1.0.145"
+serde_with = "3.15.0"
+sqlx = {version = "0.8.6", features = ["runtime-tokio", "sqlite", "macros", "migrate"]}
+thiserror = "2.0.17"
+tokio = "1.48.0"
+tracing = "0.1.41"
+tracing-subscriber = {version = "0.3.20", features = ["env-filter", "fmt", "json"]}
+
+halo2_gadgets = "0.3.1"
+halo2_proofs = "0.3.1"
+
+zcash_address = "0.10.0"
+zcash_encoding = "0.3.0"
+zcash_keys = "0.12.0"
+zcash_note_encryption = "0.4.1"
+zcash_primitives = "0.26.0"
+zcash_proofs = "0.26.0"
+zcash_protocol = "0.7.0"
+
+[patch.crates-io]
+orchard = {git = "https://github.com/hhanh00/orchard.git", rev="768c365"}
+halo2_gadgets = { git = "https://github.com/zcash/halo2.git", rev = "642924d614305d882cc122739c59144109f4bd3f" }
+halo2_proofs = { git = "https://github.com/zcash/halo2.git", rev = "642924d614305d882cc122739c59144109f4bd3f" }
