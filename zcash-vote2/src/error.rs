@@ -4,4 +4,6 @@ use thiserror::Error;
 pub enum Error {
     #[error(transparent)]
     DbError(#[from] sqlx::Error),
+    #[error(transparent)]
+    Other(#[from] anyhow::Error),
 }
