@@ -3,6 +3,7 @@ use flutter_rust_bridge::frb;
 use sqlx::{sqlite::SqliteConnectOptions, SqlitePool};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{fmt::{self, format::FmtSpan}, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer, Registry};
+use zcash_vote2::db::{create_db, get};
 
 #[frb(opaque)]
 pub struct App {
@@ -17,7 +18,7 @@ impl App {
             .filename(db_name);
         let pool = SqlitePool::connect_with(connection_options).await?;
         let mut connection = pool.acquire().await?;
-        crate::db::create_db(&mut connection).await?;
+        create_db(&mut connection).await?;
         let app = App {
             pool
         };
@@ -26,7 +27,7 @@ impl App {
 
     pub async fn test(&self) -> Result<u32> {
         let mut pool = self.pool.acquire().await?;
-        let x = crate::db::get(&mut pool).await?;
+        let x = get(&mut pool).await?;
         Ok(x)
     }
 }
