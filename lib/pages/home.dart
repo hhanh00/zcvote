@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:zcvote/main.dart';
 import 'package:zcvote/model.dart';
-import 'package:zcvote/src/rust/api/app.dart';
 
 class VotePage extends StatefulWidget {
   const VotePage({super.key});
