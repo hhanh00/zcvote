@@ -10,8 +10,9 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<App>>
 abstract class App implements RustOpaqueInterface {
-  static Future<App> connect({required String dbName}) =>
-      RustLib.instance.api.crateApiAppAppConnect(dbName: dbName);
+  // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
+  static Future<App> newInstance({required String dbName}) =>
+      RustLib.instance.api.crateApiAppAppNew(dbName: dbName);
 
   Future<int> test();
 }

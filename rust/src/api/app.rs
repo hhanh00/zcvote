@@ -1,6 +1,6 @@
 use anyhow::Result;
 use flutter_rust_bridge::frb;
-use sqlx::{sqlite::SqliteConnectOptions, Acquire, SqlitePool};
+use sqlx::{sqlite::SqliteConnectOptions, SqlitePool};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{fmt::{self, format::FmtSpan}, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer, Registry};
 
@@ -10,7 +10,8 @@ pub struct App {
 }
 
 impl App {
-    pub async fn connect(db_name: &str) -> Result<Self> {
+    #[frb]
+    pub async fn new(db_name: &str) -> Result<Self> {
         let connection_options = SqliteConnectOptions::new()
             .create_if_missing(true)
             .filename(db_name);

@@ -45,3 +45,7 @@ app.*.map.json
 /android/app/release
 secrets/
 setup-project.sh
+
+node_modules/
+docs/.vuepress/.cache
+docs/.vuepress/.temp
