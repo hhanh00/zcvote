@@ -18,8 +18,7 @@ pub async fn main() -> Result<()> {
     let _ = dotenv::dotenv();
 
     let rocket = Rocket::build();
-    let app = App::new(&dotenv::var("DB").unwrap_or("vote-client.db".to_string()),
-        zcash_vote2::db::AppRole::Creator).await?;
+    let app = App::new(&dotenv::var("DB").unwrap_or("vote-client.db".to_string())).await?;
     rocket.manage(app).mount("/", routes![get_test]).launch().await?;
     Ok(())
 }

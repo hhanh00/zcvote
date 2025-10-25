@@ -1,23 +1,17 @@
-use crate::{data::{AppRole, Election}, seed::generate_seed, VoteResult};
+use crate::{data::Election, seed::generate_seed, VoteResult};
 use sqlx::{sqlite::SqliteRow, SqliteConnection, Row};
 
-pub async fn create_db(connection: &mut SqliteConnection, role: AppRole) -> VoteResult<()> {
-    match role {
-        AppRole::Creator => {
-            sqlx::query(
-                "CREATE TABLE IF NOT EXISTS election_defs(
-                id_election INTEGER PRIMARY KEY,
-                name TEXT NOT NULL,
-                seed TEXT,
-                definition TEXT NOT NULL,
-                UNIQUE (name))",
-            )
-            .execute(&mut *connection)
-            .await?;
-        }
-        AppRole::Voter => {}
-        AppRole::Validator => {}
-    }
+pub async fn create_db(connection: &mut SqliteConnection) -> VoteResult<()> {
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS election_defs(
+        id_election INTEGER PRIMARY KEY,
+        name TEXT NOT NULL,
+        seed TEXT,
+        definition TEXT NOT NULL,
+        UNIQUE (name))",
+    )
+    .execute(&mut *connection)
+    .await?;
     Ok(())
 }
 

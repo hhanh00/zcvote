@@ -1,12 +1,6 @@
 use orchard::vote::{Frontier, OrchardHash};
 use serde::{Deserialize, Serialize};
 
-pub enum AppRole {
-    Voter,
-    Creator,
-    Validator,
-}
-
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct CandidateChoice {
     pub address: String,

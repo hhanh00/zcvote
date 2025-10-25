@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:logger/logger.dart';
 import 'package:zcvote/router.dart';
 import 'package:zcvote/src/rust/frb_generated.dart';
+
+Logger logger = Logger();
 
 Future<void> main() async {
   await RustLib.init();
@@ -12,12 +16,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
+    return ProviderScope(child: MaterialApp.router(
       routerConfig: router,
       themeMode: ThemeMode.system,
       theme: ThemeData.light(),
       darkTheme: ThemeData.dark(),
       debugShowCheckedModeBanner: false,
-    );
+    ));
   }
 }

@@ -13,12 +13,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 abstract class App implements RustOpaqueInterface {
   Future<List<Election>> listElectionDefs();
 
-  // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
-  static Future<App> newInstance({
-    required String dbName,
-    required AppRole appRole,
-  }) =>
-      RustLib.instance.api.crateApiAppAppNew(dbName: dbName, appRole: appRole);
+  factory App({required String dbName}) =>
+      RustLib.instance.api.crateApiAppAppNew(dbName: dbName);
 
   Future<Election> newElection({required String name});
 

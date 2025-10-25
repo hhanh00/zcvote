@@ -1987,6 +1987,7 @@ dependencies = [
  "rocket",
  "sqlx",
  "struct-convert",
+ "tokio",
  "tracing",
  "tracing-subscriber",
  "zcash-vote2",

@@ -1,6 +1,7 @@
 use anyhow::Result;
 use flutter_rust_bridge::frb;
 use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
+use tokio::runtime::Builder;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{
     EnvFilter, Layer, Registry,
@@ -8,11 +9,9 @@ use tracing_subscriber::{
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
-use zcash_vote2::
-    db::{create_db, list_election_defs, new_election, save_election}
-;
+use zcash_vote2::db::{create_db, list_election_defs, new_election, save_election};
 
-use crate::api::data::{AppRole, Election};
+use crate::api::data::Election;
 
 #[frb(opaque)]
 pub struct App {
@@ -20,16 +19,22 @@ pub struct App {
 }
 
 impl App {
-    #[frb]
-    pub async fn new(db_name: &str, app_role: AppRole) -> Result<Self> {
+    #[frb(sync)]
+    pub fn new(db_name: &str) -> Result<Self> {
         let connection_options = SqliteConnectOptions::new()
             .create_if_missing(true)
             .filename(db_name);
-        let pool = SqlitePool::connect_with(connection_options).await?;
-        let mut connection = pool.acquire().await?;
-        create_db(&mut connection, app_role.into()).await?;
-        let app = App { pool };
-        Ok(app)
+        let app = std::thread::spawn(|| {
+            let r = Builder::new_current_thread().enable_all().build()?;
+            r.block_on(async move {
+                let pool = SqlitePool::connect_with(connection_options).await?;
+                let mut connection = pool.acquire().await?;
+                create_db(&mut connection).await?;
+                let app = App { pool };
+                Ok(app)
+            })
+        }).join().unwrap();
+        app
     }
 
     pub async fn list_election_defs(&self) -> Result<Vec<Election>> {
@@ -41,7 +46,9 @@ impl App {
 
     pub async fn new_election(&self, name: String) -> Result<Election> {
         let mut connection = self.pool.acquire().await?;
-        Ok(new_election(&mut connection, name).await.map(|r| r.into())?)
+        Ok(new_election(&mut connection, name)
+            .await
+            .map(|r| r.into())?)
     }
 
     pub async fn save_election(&self, election: Election) -> Result<()> {
