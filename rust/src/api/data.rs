@@ -2,12 +2,6 @@
 
 use struct_convert::Convert;
 
-pub enum AppRole {
-    Voter,
-    Creator,
-    Validator,
-}
-
 #[derive(Convert)]
 #[convert(from = "zcash_vote2::data::CandidateChoice")]
 #[convert(into = "zcash_vote2::data::CandidateChoice")]
@@ -32,16 +26,6 @@ pub struct Election {
 pub struct Question {
     pub question: String,
     pub choices: Vec<CandidateChoice>,
-}
-
-impl From<AppRole> for zcash_vote2::data::AppRole {
-    fn from(value: AppRole) -> Self {
-        match value {
-            AppRole::Voter => zcash_vote2::data::AppRole::Voter,
-            AppRole::Creator => zcash_vote2::data::AppRole::Creator,
-            AppRole::Validator => zcash_vote2::data::AppRole::Validator,
-        }
-    }
 }
 
 // Cannot use the macro Convert because of the extra fields in the

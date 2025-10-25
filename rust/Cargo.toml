@@ -28,6 +28,7 @@ tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 
 sqlx = { workspace = true }
+tokio = { workspace = true }
 
 zcash-vote2 = { path = "../zcash-vote2" }
 

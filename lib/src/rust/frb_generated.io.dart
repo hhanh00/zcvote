@@ -47,9 +47,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String dco_decode_String(dynamic raw);
 
   @protected
-  AppRole dco_decode_app_role(dynamic raw);
-
-  @protected
   bool dco_decode_bool(dynamic raw);
 
   @protected
@@ -60,9 +57,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Election dco_decode_election(dynamic raw);
-
-  @protected
-  int dco_decode_i_32(dynamic raw);
 
   @protected
   List<CandidateChoice> dco_decode_list_candidate_choice(dynamic raw);
@@ -119,9 +113,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   String sse_decode_String(SseDeserializer deserializer);
 
   @protected
-  AppRole sse_decode_app_role(SseDeserializer deserializer);
-
-  @protected
   bool sse_decode_bool(SseDeserializer deserializer);
 
   @protected
@@ -132,9 +123,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   Election sse_decode_election(SseDeserializer deserializer);
-
-  @protected
-  int sse_decode_i_32(SseDeserializer deserializer);
 
   @protected
   List<CandidateChoice> sse_decode_list_candidate_choice(
@@ -169,6 +157,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   BigInt sse_decode_usize(SseDeserializer deserializer);
 
   @protected
+  int sse_decode_i_32(SseDeserializer deserializer);
+
+  @protected
   void sse_encode_AnyhowException(
     AnyhowException self,
     SseSerializer serializer,
@@ -199,9 +190,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
   void sse_encode_String(String self, SseSerializer serializer);
 
   @protected
-  void sse_encode_app_role(AppRole self, SseSerializer serializer);
-
-  @protected
   void sse_encode_bool(bool self, SseSerializer serializer);
 
   @protected
@@ -215,9 +203,6 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_election(Election self, SseSerializer serializer);
-
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer);
 
   @protected
   void sse_encode_list_candidate_choice(
@@ -254,6 +239,9 @@ abstract class RustLibApiImplPlatform extends BaseApiImpl<RustLibWire> {
 
   @protected
   void sse_encode_usize(BigInt self, SseSerializer serializer);
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer);
 }
 
 // Section: wire_class

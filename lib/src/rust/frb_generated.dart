@@ -80,10 +80,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 abstract class RustLibApi extends BaseApi {
   Future<List<Election>> crateApiAppAppListElectionDefs({required App that});
 
-  Future<App> crateApiAppAppNew({
-    required String dbName,
-    required AppRole appRole,
-  });
+  App crateApiAppAppNew({required String dbName});
 
   Future<Election> crateApiAppAppNewElection({
     required App that,
@@ -147,22 +144,13 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       );
 
   @override
-  Future<App> crateApiAppAppNew({
-    required String dbName,
-    required AppRole appRole,
-  }) {
-    return handler.executeNormal(
-      NormalTask(
-        callFfi: (port_) {
+  App crateApiAppAppNew({required String dbName}) {
+    return handler.executeSync(
+      SyncTask(
+        callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(dbName, serializer);
-          sse_encode_app_role(appRole, serializer);
-          pdeCallFfi(
-            generalizedFrbRustBinding,
-            serializer,
-            funcId: 2,
-            port: port_,
-          );
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -170,16 +158,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeErrorData: sse_decode_AnyhowException,
         ),
         constMeta: kCrateApiAppAppNewConstMeta,
-        argValues: [dbName, appRole],
+        argValues: [dbName],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiAppAppNewConstMeta => const TaskConstMeta(
-    debugName: "App_new",
-    argNames: ["dbName", "appRole"],
-  );
+  TaskConstMeta get kCrateApiAppAppNewConstMeta =>
+      const TaskConstMeta(debugName: "App_new", argNames: ["dbName"]);
 
   @override
   Future<Election> crateApiAppAppNewElection({
@@ -330,12 +316,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  AppRole dco_decode_app_role(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return AppRole.values[raw as int];
-  }
-
-  @protected
   bool dco_decode_bool(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as bool;
@@ -373,12 +353,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       questions: dco_decode_list_question(arr[4]),
       signatureRequired: dco_decode_bool(arr[5]),
     );
-  }
-
-  @protected
-  int dco_decode_i_32(dynamic raw) {
-    // Codec=Dco (DartCObject based), see doc to use other codecs
-    return raw as int;
   }
 
   @protected
@@ -498,13 +472,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  AppRole sse_decode_app_role(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    var inner = sse_decode_i_32(deserializer);
-    return AppRole.values[inner];
-  }
-
-  @protected
   bool sse_decode_bool(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     return deserializer.buffer.getUint8() != 0;
@@ -541,12 +508,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       questions: var_questions,
       signatureRequired: var_signatureRequired,
     );
-  }
-
-  @protected
-  int sse_decode_i_32(SseDeserializer deserializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    return deserializer.buffer.getInt32();
   }
 
   @protected
@@ -637,6 +598,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  int sse_decode_i_32(SseDeserializer deserializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    return deserializer.buffer.getInt32();
+  }
+
+  @protected
   void sse_encode_AnyhowException(
     AnyhowException self,
     SseSerializer serializer,
@@ -691,12 +658,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
-  void sse_encode_app_role(AppRole self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_i_32(self.index, serializer);
-  }
-
-  @protected
   void sse_encode_bool(bool self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putUint8(self ? 1 : 0);
@@ -730,12 +691,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.endHeight, serializer);
     sse_encode_list_question(self.questions, serializer);
     sse_encode_bool(self.signatureRequired, serializer);
-  }
-
-  @protected
-  void sse_encode_i_32(int self, SseSerializer serializer) {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    serializer.buffer.putInt32(self);
   }
 
   @protected
@@ -816,6 +771,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   void sse_encode_usize(BigInt self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     serializer.buffer.putBigUint64(self);
+  }
+
+  @protected
+  void sse_encode_i_32(int self, SseSerializer serializer) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    serializer.buffer.putInt32(self);
   }
 }
 
