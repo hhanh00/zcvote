@@ -1,12 +1,69 @@
-use crate::VoteResult;
-use sqlx::SqliteConnection;
+use crate::{data::{AppRole, Election}, seed::generate_seed, VoteResult};
+use sqlx::{sqlite::SqliteRow, SqliteConnection, Row};
 
-pub async fn create_db(connection: &mut SqliteConnection) -> VoteResult<()> {
+pub async fn create_db(connection: &mut SqliteConnection, role: AppRole) -> VoteResult<()> {
+    match role {
+        AppRole::Creator => {
+            sqlx::query(
+                "CREATE TABLE IF NOT EXISTS election_defs(
+                id_election INTEGER PRIMARY KEY,
+                name TEXT NOT NULL,
+                seed TEXT,
+                definition TEXT NOT NULL,
+                UNIQUE (name))",
+            )
+            .execute(&mut *connection)
+            .await?;
+        }
+        AppRole::Voter => {}
+        AppRole::Validator => {}
+    }
+    Ok(())
+}
+
+pub async fn list_election_defs(connection: &mut SqliteConnection) -> VoteResult<Vec<Election>> {
+    let elections = sqlx::query("SELECT seed, definition FROM election_defs")
+    .map(|r: SqliteRow| {
+        let seed: String = r.get(0);
+        let def: String = r.get(1);
+        let mut def: Election = serde_json::from_str(&def).expect("Invalid election definition");
+        def.seed = Some(seed);
+        def
+    })
+    .fetch_all(&mut *connection)
+    .await?;
+    Ok(elections)
+}
+
+pub async fn new_election(connection: &mut SqliteConnection, name: String) -> VoteResult<Election> {
+    let seed = generate_seed()?;
+    let mut election = Election {
+        name: name.clone(),
+        ..Default::default()
+    };
+    // Do not store the seed with the definition in the db
+    sqlx::query("INSERT INTO election_defs(name, seed, definition)
+        VALUES (?1, ?2, ?3)")
+    .bind(&name)
+    .bind(&seed)
+    .bind(serde_json::to_string(&election).unwrap())
+    .execute(connection)
+    .await?;
+    election.seed = Some(seed);
+    Ok(election)
+}
+
+pub async fn save_election(connection: &mut SqliteConnection, mut election: Election) -> VoteResult<()> {
+    // Saving erases the cmx/nf/frontier since we are not sure that they are still valid
+    election.cmx = None;
+    election.nf = None;
+    election.cmx_frontier = None;
+
     sqlx::query(
-        "CREATE TABLE IF NOT EXISTS test(
-        v INTEGER NOT NULL)",
-    )
-    .execute(&mut *connection)
+        "UPDATE election_defs SET definition = ?2 WHERE name = ?1")
+    .bind(&election.name)
+    .bind(serde_json::to_string(&election).unwrap())
+    .execute(connection)
     .await?;
     Ok(())
 }

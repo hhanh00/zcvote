@@ -4,15 +4,23 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'data.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
 // These functions are ignored because they are not marked as `pub`: `default_layer`, `env_layer`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<App>>
 abstract class App implements RustOpaqueInterface {
-  // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
-  static Future<App> newInstance({required String dbName}) =>
-      RustLib.instance.api.crateApiAppAppNew(dbName: dbName);
+  Future<List<Election>> listElectionDefs();
 
-  Future<int> test();
+  // HINT: Make it `#[frb(sync)]` to let it become the default constructor of Dart class.
+  static Future<App> newInstance({
+    required String dbName,
+    required AppRole appRole,
+  }) =>
+      RustLib.instance.api.crateApiAppAppNew(dbName: dbName, appRole: appRole);
+
+  Future<Election> newElection({required String name});
+
+  Future<void> saveElection({required Election election});
 }

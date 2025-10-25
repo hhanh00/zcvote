@@ -1,10 +1,36 @@
 use orchard::vote::{Frontier, OrchardHash};
 use serde::{Deserialize, Serialize};
 
+pub enum AppRole {
+    Voter,
+    Creator,
+    Validator,
+}
+
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct CandidateChoice {
     pub address: String,
     pub choice: String,
+}
+
+/// Details of an election, including metadata, candidates, and election parameters.
+#[derive(Clone, Serialize, Deserialize, Default, Debug)]
+pub struct Election {
+    pub name: String,
+    pub seed: Option<String>, // only available to the creator
+    pub start_height: u32,
+    pub end_height: u32,
+    pub questions: Vec<Question>,
+    pub signature_required: bool,
+    pub cmx: Option<OrchardHash>,
+    pub nf: Option<OrchardHash>,
+    pub cmx_frontier: Option<Frontier>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Default, Debug)]
+pub struct Question {
+    pub question: String,
+    pub choices: Vec<CandidateChoice>,
 }
 
 impl CandidateChoice {
@@ -14,20 +40,6 @@ impl CandidateChoice {
             choice,
         }
     }
-}
-
-/// Details of an election, including metadata, candidates, and election parameters.
-#[derive(Clone, Serialize, Deserialize, Default, Debug)]
-pub struct Election {
-    pub name: String,
-    pub start_height: u32,
-    pub end_height: u32,
-    pub question: String,
-    pub candidates: Vec<CandidateChoice>,
-    pub signature_required: bool,
-    pub cmx: OrchardHash,
-    pub nf: OrchardHash,
-    pub cmx_frontier: Option<Frontier>,
 }
 
 #[cfg(test)]
