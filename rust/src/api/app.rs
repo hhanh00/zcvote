@@ -24,16 +24,14 @@ impl App {
         let connection_options = SqliteConnectOptions::new()
             .create_if_missing(true)
             .filename(db_name);
-        let app = std::thread::spawn(|| {
-            let r = Builder::new_current_thread().enable_all().build()?;
-            r.block_on(async move {
-                let pool = SqlitePool::connect_with(connection_options).await?;
-                let mut connection = pool.acquire().await?;
-                create_db(&mut connection).await?;
-                let app = App { pool };
-                Ok(app)
-            })
-        }).join().unwrap();
+        let r = Builder::new_current_thread().enable_all().build()?;
+        let app = r.block_on(async move {
+            let pool = SqlitePool::connect_with(connection_options).await?;
+            let mut connection = pool.acquire().await?;
+            create_db(&mut connection).await?;
+            let app = App { pool };
+            Ok(app)
+        });
         app
     }
 
