@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:zcvote/store.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+class VotePage extends StatefulWidget {
+  const VotePage({super.key});
 
   @override
-  State<StatefulWidget> createState() => HomePageState();
+  State<StatefulWidget> createState() => VotePageState();
 }
 
-class HomePageState extends State<HomePage> {
+class VotePageState extends State<VotePage> {
   int x = 0;
 
   @override void initState() {
@@ -21,7 +21,6 @@ class HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: AppBar(title: Text('Home $x')),
-    );
+    return SizedBox.shrink();
   }
 }
