@@ -1,5 +1,4 @@
 import 'package:riverpod/riverpod.dart';
-import 'package:zcvote/main.dart';
 import 'package:zcvote/src/rust/api/app.dart';
 import 'package:zcvote/src/rust/api/data.dart';
 

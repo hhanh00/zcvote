@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:zcvote/main.dart';
@@ -67,8 +68,7 @@ class CreatePageState extends ConsumerState<CreatePage> {
         false;
     if (confirmed) {
       final app = ref.read(appProvider);
-      final election = await app.newElection(name: nameController.text);
-      logger.i(election.name);
+      await app.newElection(name: nameController.text);
       ref.invalidate(listElectionsProvider);
     }
   }
@@ -146,6 +146,7 @@ class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
                     ),
                     FormBuilderTextField(
                       name: "startHeight",
+                      decoration: InputDecoration(label: Text("Start Height")),
                       controller: startHeightController,
                       validator: FormBuilderValidators.integer(
                         checkNullOrEmpty: true,
@@ -153,14 +154,16 @@ class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
                     ),
                     FormBuilderTextField(
                       name: "endHeight",
+                      decoration: InputDecoration(label: Text("End Height")),
                       controller: endHeightController,
                       validator: FormBuilderValidators.integer(
                         checkNullOrEmpty: true,
                       ),
                     ),
-                    TextButton(
-                      onPressed: () => context.pop(),
-                      child: Text("Go Back"),
+                    Gap(8),
+                    QuestionListFormField(
+                      name: "questions",
+                      initialValue: data.questions,
                     ),
                   ],
                 ),
@@ -173,4 +176,144 @@ class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
       loading: LinearProgressIndicator.new,
     );
   }
+}
+
+class QuestionListFormField extends StatefulWidget {
+  final String name;
+  final List<Question>? initialValue;
+
+  const QuestionListFormField({
+    required this.name,
+    this.initialValue,
+    super.key,
+  });
+
+  @override
+  State<StatefulWidget> createState() => QuestionListFormFieldState();
+}
+
+class QuestionListFormFieldState extends State<QuestionListFormField> {
+  late List<Question> questions = List.of(widget.initialValue ?? []);
+  int? selected;
+  final formKey = GlobalKey<FormBuilderState>();
+
+  @override
+  Widget build(BuildContext context) {
+    return FormBuilderField<List<Question>>(
+      name: widget.name,
+      initialValue: questions,
+      builder: (state) {
+        return FormBuilder(
+          key: formKey,
+          child: Column(
+            children: [
+              SizedBox(
+                height: 200,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: ListView(
+                        shrinkWrap: true,
+                        children: [
+                          for (var (i, q) in questions.indexed)
+                            ListTile(
+                              title: Text(q.question),
+                              onTap: () => setState(() {
+                                if (selected == i) {
+                                  selected = null;
+                                } else {
+                                  selected = i;
+                                  final f = formKey.currentState!.fields;
+                                  final q = questions[i];
+                                  f["question"]?.didChange(q.question);
+                                  f["answers"]?.didChange(
+                                    q.choices.map((a) => a.choice).join("\n"),
+                                  );
+                                }
+                              }),
+                            ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(
+                      width: 40,
+                      child: Column(
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.add),
+                            onPressed: selected == null ? onAdd : null,
+                          ),
+                          Gap(8),
+                          IconButton(
+                            icon: Icon(Icons.arrow_upward),
+                            onPressed: selected != null ? onUp : null,
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.arrow_downward),
+                            onPressed: selected != null ? onDown : null,
+                          ),
+                          Divider(),
+                          IconButton(
+                            icon: Icon(Icons.delete),
+                            onPressed: selected != null ? onDelete : null,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Gap(16),
+              if (selected != null)
+                FormBuilderTextField(
+                  name: "question",
+                  decoration: InputDecoration(label: Text("Question")),
+                  initialValue: questions[selected!].question,
+                  onChanged: (v) {
+                    setState(() {
+                      final q = questions[selected!];
+                      questions[selected!] = q.copyWith(question: v!);
+                    });
+                  },
+                ),
+              if (selected != null)
+                FormBuilderTextField(
+                  name: "answers",
+                  decoration: InputDecoration(
+                    label: Text("Answers (one per line)"),
+                  ),
+                  minLines: 10,
+                  maxLines: 30,
+                  initialValue: questions[selected!].choices
+                      .map((a) => a.choice)
+                      .join("\n"),
+                  onChanged: (v) {
+                    setState(() {
+                      final q = questions[selected!];
+                      questions[selected!] = q.copyWith(
+                        choices: v!
+                            .split("\n")
+                            .map((a) => CandidateChoice(address: "", choice: a))
+                            .toList(),
+                      );
+                    });
+                  },
+                ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void onAdd() async {
+    setState(
+      () => questions.add(Question(question: "New Question", choices: [])),
+    );
+  }
+
+  void onUp() async {}
+  void onDown() async {}
+  void onDelete() async {}
 }
