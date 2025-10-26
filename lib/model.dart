@@ -8,3 +8,24 @@ final listElectionsProvider = FutureProvider<List<Election>>((ref) async {
   final elections = await app.listElectionDefs();
   return elections;
 });
+
+class ElectionNotifier extends AsyncNotifier<Election> {
+  final String name;
+  ElectionNotifier(this.name);
+
+  @override
+  Future<Election> build() {
+    final elections = ref.watch(listElectionsProvider.future);
+    final election = elections.then((e) => e.firstWhere((e) => e.name == name));
+    return election;
+  }
+
+  void save(Election e) async {
+    state = AsyncData(e);
+  }
+}
+
+final electionProvider =
+    AsyncNotifierProvider.family<ElectionNotifier, Election, String>(
+      ElectionNotifier.new,
+    );

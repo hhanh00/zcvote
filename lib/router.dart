@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:zcvote/pages/home.dart';
+import 'package:zcvote/pages/create.dart';
 
 final navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
 
-final votePageKey = GlobalKey<VotePageState>();
+final createPageKey = GlobalKey<CreatePageState>();
 
 var router = GoRouter(
   initialLocation: '/vote',
@@ -24,7 +24,7 @@ var router = GoRouter(
             GoRoute(
               path: '/vote',
               pageBuilder: (context, state) =>
-                  NoTransitionPage(child: VotePage(key: votePageKey)),
+                  NoTransitionPage(child: PlaceHolderPage("vote")),
             ),
           ],
         ),
@@ -33,7 +33,14 @@ var router = GoRouter(
             GoRoute(
               path: '/create',
               pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: PlaceHolderPage("create")),
+                  NoTransitionPage(child: CreatePage(key: createPageKey)),
+              routes: [
+                GoRoute(
+                  path: "edit",
+                  pageBuilder: (context, state) =>
+                      NoTransitionPage(child: CreateEditPage(state.extra as String)),
+                ),
+              ],
             ),
           ],
         ),
@@ -66,13 +73,20 @@ class ScaffoldWithNavBar extends ConsumerWidget {
   const ScaffoldWithNavBar({super.key, required this.shell});
 
   static final tabs = [
-    BottomTabItem(label: 'Vote', icon: Icons.how_to_vote, route: '/vote',
-    actions: [
-      IconButton(onPressed: () {
-        votePageKey.currentState?.onNew();
-      }, icon: Icon(Icons.add))
-    ]),
-    BottomTabItem(label: 'Create', icon: Icons.build, route: '/create'),
+    BottomTabItem(label: 'Vote', icon: Icons.how_to_vote, route: '/vote'),
+    BottomTabItem(
+      label: 'Create',
+      icon: Icons.build,
+      route: '/create',
+      actions: [
+        IconButton(
+          onPressed: () {
+            createPageKey.currentState?.onNew();
+          },
+          icon: Icon(Icons.add),
+        ),
+      ],
+    ),
     BottomTabItem(label: 'Deploy', icon: Icons.hub, route: '/deploy'),
     BottomTabItem(label: 'Verify', icon: Icons.verified, route: '/verify'),
   ];
