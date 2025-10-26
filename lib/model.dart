@@ -1,4 +1,5 @@
 import 'package:riverpod/riverpod.dart';
+import 'package:zcvote/main.dart';
 import 'package:zcvote/src/rust/api/app.dart';
 import 'package:zcvote/src/rust/api/data.dart';
 
@@ -20,8 +21,16 @@ class ElectionNotifier extends AsyncNotifier<Election> {
     return election;
   }
 
-  void save(Election e) async {
-    state = AsyncData(e);
+  void save(int startHeight, int endHeight, List<Question> questions) async {
+    final newState = await update(
+      (prev) => prev.copyWith(
+        startHeight: startHeight,
+        endHeight: endHeight,
+        questions: questions,
+      ),
+    );
+    final app = ref.read(appProvider);
+    app.saveElection(election: newState);
   }
 }
 

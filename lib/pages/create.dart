@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:zcvote/main.dart';
 import 'package:zcvote/model.dart';
+import 'package:zcvote/router.dart';
+import 'package:zcvote/src/rust/api/data.dart';
 
 class CreatePage extends ConsumerStatefulWidget {
   const CreatePage({super.key});
@@ -24,7 +26,7 @@ class CreatePageState extends ConsumerState<CreatePage> {
             for (var v in value)
               ListTile(
                 title: Text(v.name),
-                onTap: () => context.go("/create/edit", extra: v.name),
+                onTap: () => context.push("/create/edit", extra: v.name),
               ),
           ],
         );
@@ -80,13 +82,92 @@ class CreateEditPage extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => CreateEditState();
 }
 
-class CreateEditState extends ConsumerState<CreateEditPage> {
+class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
+  final startHeightController = TextEditingController();
+  final endHeightController = TextEditingController();
+  final questions = <Question>[];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  @override
+  void didPop() {
+    super.didPop();
+    final electionNotifier = ref.read(electionProvider(widget.name).notifier);
+    electionNotifier.build();
+    electionNotifier.save(
+      int.parse(startHeightController.text),
+      int.parse(endHeightController.text),
+      questions,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final election = ref.watch(electionProvider(widget.name));
     return election.when(
       data: (data) {
-        return Text(data.name);
+        startHeightController.text = data.startHeight.toString();
+        endHeightController.text = data.endHeight.toString();
+
+        return Scaffold(
+          appBar: AppBar(
+            actions: [
+              IconButton(
+                onPressed: () {
+                  createPageKey.currentState?.onNew();
+                },
+                icon: Icon(Icons.add),
+              ),
+            ],
+          ),
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
+              child: FormBuilder(
+                child: Column(
+                  children: [
+                    FormBuilderTextField(
+                      name: "name",
+                      readOnly: true,
+                      initialValue: data.name,
+                    ),
+                    FormBuilderTextField(
+                      name: "startHeight",
+                      controller: startHeightController,
+                      validator: FormBuilderValidators.integer(
+                        checkNullOrEmpty: true,
+                      ),
+                    ),
+                    FormBuilderTextField(
+                      name: "endHeight",
+                      controller: endHeightController,
+                      validator: FormBuilderValidators.integer(
+                        checkNullOrEmpty: true,
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => context.pop(),
+                      child: Text("Go Back"),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
       },
       error: (error, _) => Text("$error"),
       loading: LinearProgressIndicator.new,

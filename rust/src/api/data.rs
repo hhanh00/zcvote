@@ -1,16 +1,19 @@
 // These are FRB friendly structs
 
+use flutter_rust_bridge::frb;
 use struct_convert::Convert;
 
 #[derive(Convert)]
 #[convert(from = "zcash_vote2::data::CandidateChoice")]
 #[convert(into = "zcash_vote2::data::CandidateChoice")]
+#[frb(dart_metadata = ("freezed"))]
 pub struct CandidateChoice {
     pub address: String,
     pub choice: String,
 }
 
 /// Details of an election, including metadata, candidates, and election parameters.
+#[frb(dart_metadata = ("freezed"))]
 pub struct Election {
     pub name: String,
     pub seed: Option<String>, // only available to the creator
@@ -23,6 +26,7 @@ pub struct Election {
 #[derive(Convert)]
 #[convert(from = "zcash_vote2::data::Question")]
 #[convert(into = "zcash_vote2::data::Question")]
+#[frb(dart_metadata = ("freezed"))]
 pub struct Question {
     pub question: String,
     pub choices: Vec<CandidateChoice>,
