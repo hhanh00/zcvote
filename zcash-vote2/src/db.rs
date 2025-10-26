@@ -16,7 +16,7 @@ pub async fn create_db(connection: &mut SqliteConnection) -> VoteResult<()> {
 }
 
 pub async fn list_election_defs(connection: &mut SqliteConnection) -> VoteResult<Vec<Election>> {
-    let elections = sqlx::query("SELECT seed, definition FROM election_defs")
+    let elections = sqlx::query("SELECT seed, definition FROM election_defs ORDER BY name")
     .map(|r: SqliteRow| {
         let seed: String = r.get(0);
         let def: String = r.get(1);
