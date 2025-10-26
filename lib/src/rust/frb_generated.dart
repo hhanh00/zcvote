@@ -331,12 +331,9 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   CandidateChoice dco_decode_candidate_choice(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 2)
-      throw Exception('unexpected arr length: expect 2 but see ${arr.length}');
-    return CandidateChoice(
-      address: dco_decode_String(arr[0]),
-      choice: dco_decode_String(arr[1]),
-    );
+    if (arr.length != 1)
+      throw Exception('unexpected arr length: expect 1 but see ${arr.length}');
+    return CandidateChoice(choice: dco_decode_String(arr[0]));
   }
 
   @protected
@@ -486,9 +483,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   @protected
   CandidateChoice sse_decode_candidate_choice(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    var var_address = sse_decode_String(deserializer);
     var var_choice = sse_decode_String(deserializer);
-    return CandidateChoice(address: var_address, choice: var_choice);
+    return CandidateChoice(choice: var_choice);
   }
 
   @protected
@@ -678,7 +674,6 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     SseSerializer serializer,
   ) {
     // Codec=Sse (Serialization based), see doc to use other codecs
-    sse_encode_String(self.address, serializer);
     sse_encode_String(self.choice, serializer);
   }
 

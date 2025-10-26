@@ -14,7 +14,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$CandidateChoice {
 
- String get address; String get choice;
+ String get choice;
 /// Create a copy of CandidateChoice
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -25,16 +25,16 @@ $CandidateChoiceCopyWith<CandidateChoice> get copyWith => _$CandidateChoiceCopyW
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is CandidateChoice&&(identical(other.address, address) || other.address == address)&&(identical(other.choice, choice) || other.choice == choice));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is CandidateChoice&&(identical(other.choice, choice) || other.choice == choice));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,address,choice);
+int get hashCode => Object.hash(runtimeType,choice);
 
 @override
 String toString() {
-  return 'CandidateChoice(address: $address, choice: $choice)';
+  return 'CandidateChoice(choice: $choice)';
 }
 
 
@@ -45,7 +45,7 @@ abstract mixin class $CandidateChoiceCopyWith<$Res>  {
   factory $CandidateChoiceCopyWith(CandidateChoice value, $Res Function(CandidateChoice) _then) = _$CandidateChoiceCopyWithImpl;
 @useResult
 $Res call({
- String address, String choice
+ String choice
 });
 
 
@@ -62,10 +62,9 @@ class _$CandidateChoiceCopyWithImpl<$Res>
 
 /// Create a copy of CandidateChoice
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? address = null,Object? choice = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? choice = null,}) {
   return _then(_self.copyWith(
-address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
-as String,choice: null == choice ? _self.choice : choice // ignore: cast_nullable_to_non_nullable
+choice: null == choice ? _self.choice : choice // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
@@ -148,10 +147,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String address,  String choice)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String choice)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _CandidateChoice() when $default != null:
-return $default(_that.address,_that.choice);case _:
+return $default(_that.choice);case _:
   return orElse();
 
 }
@@ -169,10 +168,10 @@ return $default(_that.address,_that.choice);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String address,  String choice)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String choice)  $default,) {final _that = this;
 switch (_that) {
 case _CandidateChoice():
-return $default(_that.address,_that.choice);}
+return $default(_that.choice);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -186,10 +185,10 @@ return $default(_that.address,_that.choice);}
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String address,  String choice)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String choice)?  $default,) {final _that = this;
 switch (_that) {
 case _CandidateChoice() when $default != null:
-return $default(_that.address,_that.choice);case _:
+return $default(_that.choice);case _:
   return null;
 
 }
@@ -201,10 +200,9 @@ return $default(_that.address,_that.choice);case _:
 
 
 class _CandidateChoice implements CandidateChoice {
-  const _CandidateChoice({required this.address, required this.choice});
+  const _CandidateChoice({required this.choice});
   
 
-@override final  String address;
 @override final  String choice;
 
 /// Create a copy of CandidateChoice
@@ -217,16 +215,16 @@ _$CandidateChoiceCopyWith<_CandidateChoice> get copyWith => __$CandidateChoiceCo
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CandidateChoice&&(identical(other.address, address) || other.address == address)&&(identical(other.choice, choice) || other.choice == choice));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _CandidateChoice&&(identical(other.choice, choice) || other.choice == choice));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,address,choice);
+int get hashCode => Object.hash(runtimeType,choice);
 
 @override
 String toString() {
-  return 'CandidateChoice(address: $address, choice: $choice)';
+  return 'CandidateChoice(choice: $choice)';
 }
 
 
@@ -237,7 +235,7 @@ abstract mixin class _$CandidateChoiceCopyWith<$Res> implements $CandidateChoice
   factory _$CandidateChoiceCopyWith(_CandidateChoice value, $Res Function(_CandidateChoice) _then) = __$CandidateChoiceCopyWithImpl;
 @override @useResult
 $Res call({
- String address, String choice
+ String choice
 });
 
 
@@ -254,10 +252,9 @@ class __$CandidateChoiceCopyWithImpl<$Res>
 
 /// Create a copy of CandidateChoice
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? address = null,Object? choice = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? choice = null,}) {
   return _then(_CandidateChoice(
-address: null == address ? _self.address : address // ignore: cast_nullable_to_non_nullable
-as String,choice: null == choice ? _self.choice : choice // ignore: cast_nullable_to_non_nullable
+choice: null == choice ? _self.choice : choice // ignore: cast_nullable_to_non_nullable
 as String,
   ));
 }
