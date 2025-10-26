@@ -4,7 +4,6 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:zcvote/main.dart';
 import 'package:zcvote/model.dart';
 import 'package:zcvote/router.dart';
 import 'package:zcvote/src/rust/api/data.dart';
@@ -85,7 +84,7 @@ class CreateEditPage extends ConsumerStatefulWidget {
 class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
   final startHeightController = TextEditingController();
   final endHeightController = TextEditingController();
-  final questions = <Question>[];
+  List<Question> questions = <Question>[];
 
   @override
   void didChangeDependencies() {
@@ -164,6 +163,7 @@ class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
                     QuestionListFormField(
                       name: "questions",
                       initialValue: data.questions,
+                      onChanged: (q) => setState(() => questions = q!),
                     ),
                   ],
                 ),
@@ -181,10 +181,12 @@ class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
 class QuestionListFormField extends StatefulWidget {
   final String name;
   final List<Question>? initialValue;
+  final void Function(List<Question>?)? onChanged;
 
   const QuestionListFormField({
     required this.name,
     this.initialValue,
+    this.onChanged,
     super.key,
   });
 
@@ -202,6 +204,7 @@ class QuestionListFormFieldState extends State<QuestionListFormField> {
     return FormBuilderField<List<Question>>(
       name: widget.name,
       initialValue: questions,
+      onChanged: widget.onChanged,
       builder: (state) {
         return FormBuilder(
           key: formKey,
@@ -274,6 +277,7 @@ class QuestionListFormFieldState extends State<QuestionListFormField> {
                     setState(() {
                       final q = questions[selected!];
                       questions[selected!] = q.copyWith(question: v!);
+                      widget.onChanged?.call(questions);
                     });
                   },
                 ),
@@ -294,9 +298,10 @@ class QuestionListFormFieldState extends State<QuestionListFormField> {
                       questions[selected!] = q.copyWith(
                         choices: v!
                             .split("\n")
-                            .map((a) => CandidateChoice(address: "", choice: a))
+                            .map((a) => CandidateChoice(choice: a))
                             .toList(),
                       );
+                      widget.onChanged?.call(questions);
                     });
                   },
                 ),

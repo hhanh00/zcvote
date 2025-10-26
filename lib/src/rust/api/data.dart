@@ -8,14 +8,11 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'data.freezed.dart';
 
-// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`, `into`, `into`
+// These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`, `from`, `into`
 
 @freezed
 sealed class CandidateChoice with _$CandidateChoice {
-  const factory CandidateChoice({
-    required String address,
-    required String choice,
-  }) = _CandidateChoice;
+  const factory CandidateChoice({required String choice}) = _CandidateChoice;
 }
 
 /// Details of an election, including metadata, candidates, and election parameters.

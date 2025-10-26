@@ -334,12 +334,8 @@ impl SseDecode for bool {
 impl SseDecode for crate::api::data::CandidateChoice {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut var_address = <String>::sse_decode(deserializer);
         let mut var_choice = <String>::sse_decode(deserializer);
-        return crate::api::data::CandidateChoice {
-            address: var_address,
-            choice: var_choice,
-        };
+        return crate::api::data::CandidateChoice { choice: var_choice };
     }
 }
 
@@ -519,11 +515,7 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<App>> for App {
 // Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::api::data::CandidateChoice {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        [
-            self.address.into_into_dart().into_dart(),
-            self.choice.into_into_dart().into_dart(),
-        ]
-        .into_dart()
+        [self.choice.into_into_dart().into_dart()].into_dart()
     }
 }
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
@@ -617,7 +609,6 @@ impl SseEncode for bool {
 impl SseEncode for crate::api::data::CandidateChoice {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <String>::sse_encode(self.address, serializer);
         <String>::sse_encode(self.choice, serializer);
     }
 }

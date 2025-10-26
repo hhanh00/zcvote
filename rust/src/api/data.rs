@@ -5,10 +5,8 @@ use struct_convert::Convert;
 
 #[derive(Convert)]
 #[convert(from = "zcash_vote2::data::CandidateChoice")]
-#[convert(into = "zcash_vote2::data::CandidateChoice")]
 #[frb(dart_metadata = ("freezed"))]
 pub struct CandidateChoice {
-    pub address: String,
     pub choice: String,
 }
 
@@ -30,6 +28,15 @@ pub struct Election {
 pub struct Question {
     pub question: String,
     pub choices: Vec<CandidateChoice>,
+}
+
+impl std::convert::From<CandidateChoice> for zcash_vote2::data::CandidateChoice {
+    fn from(val: CandidateChoice) -> zcash_vote2::data::CandidateChoice {
+        zcash_vote2::data::CandidateChoice {
+            address: None,
+            choice: val.choice.into(),
+        }
+    }
 }
 
 // Cannot use the macro Convert because of the extra fields in the

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct CandidateChoice {
-    pub address: String,
+    pub address: Option<String>,
     pub choice: String,
 }
 
@@ -31,7 +31,7 @@ pub struct Question {
 impl CandidateChoice {
     pub fn new(address: String, choice: String) -> Self {
         CandidateChoice {
-            address,
+            address: Some(address),
             choice,
         }
     }
