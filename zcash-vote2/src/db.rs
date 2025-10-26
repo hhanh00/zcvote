@@ -12,6 +12,13 @@ pub async fn create_db(connection: &mut SqliteConnection) -> VoteResult<()> {
     )
     .execute(&mut *connection)
     .await?;
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS blocks(
+        height INTEGER PRIMARY KEY,
+        data BLOB NOT NULL)",
+    )
+    .execute(&mut *connection)
+    .await?;
     Ok(())
 }
 

@@ -23,6 +23,11 @@ tokio = "1.48.0"
 tracing = "0.1.41"
 tracing-subscriber = {version = "0.3.20", features = ["env-filter", "fmt", "json"]}
 
+tonic = { version = "0.14.2", features = ["tls-webpki-roots", "tls-ring"] }
+prost = "0.14.1"
+tonic-prost = "0.14.2"
+rustls = "0.23.31"
+
 bip39 = "2.2.0"
 
 halo2_gadgets = "0.3.1"
