@@ -6,6 +6,7 @@ pub mod seed;
 pub mod db;
 pub mod data;
 pub mod download;
+pub mod trees;
 
 #[path = "cash.z.wallet.sdk.rpc.rs"]
 pub mod lwd_prc;

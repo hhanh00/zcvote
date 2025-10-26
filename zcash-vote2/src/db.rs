@@ -1,4 +1,5 @@
-use crate::{data::Election, seed::generate_seed, VoteResult};
+use crate::{data::Election, seed::generate_seed, tiu, VoteResult};
+use halo2_proofs::pasta::{group::ff::PrimeField, Fp};
 use sqlx::{sqlite::SqliteRow, SqliteConnection, Row};
 
 pub async fn create_db(connection: &mut SqliteConnection) -> VoteResult<()> {
@@ -16,6 +17,16 @@ pub async fn create_db(connection: &mut SqliteConnection) -> VoteResult<()> {
         "CREATE TABLE IF NOT EXISTS blocks(
         height INTEGER PRIMARY KEY,
         data BLOB NOT NULL)",
+    )
+    .execute(&mut *connection)
+    .await?;
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS actions(
+        id_action INTEGER PRIMARY KEY,
+        height INTEGER NOT NULL,
+        idx INTEGER NOT NULL,
+        nf BLOB NOT NULL,
+        cmx BLOB NOT NULL)",
     )
     .execute(&mut *connection)
     .await?;
@@ -67,6 +78,33 @@ pub async fn save_election(connection: &mut SqliteConnection, mut election: Elec
     .execute(connection)
     .await?;
     Ok(())
+}
+
+pub async fn list_nfs(connection: &mut SqliteConnection, start: u32, end: u32) -> VoteResult<Vec<Fp>> {
+    let r= sqlx::query("SELECT nf FROM actions WHERE height >= ?1 AND height <= ?2 ORDER BY nf")
+    .bind(start)
+    .bind(end)
+    .map(|r: SqliteRow| {
+        let mut nf: Vec<u8> = r.get(0);
+        nf.reverse();
+        Fp::from_repr(tiu!(nf)).unwrap()
+    })
+    .fetch_all(connection)
+    .await?;
+    Ok(r)
+}
+
+pub async fn list_cmx(connection: &mut SqliteConnection, start: u32, end: u32) -> VoteResult<Vec<Fp>> {
+    let r= sqlx::query("SELECT cmx FROM actions WHERE height >= ?1 AND height <= ?2 ORDER BY (height, idx)")
+    .bind(start)
+    .bind(end)
+    .map(|r: SqliteRow| {
+        let cmx: Vec<u8> = r.get(0);
+        Fp::from_repr(tiu!(cmx)).unwrap()
+    })
+    .fetch_all(connection)
+    .await?;
+    Ok(r)
 }
 
 pub async fn get(connection: &mut SqliteConnection) -> VoteResult<u32> {

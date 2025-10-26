@@ -1,16 +1,16 @@
 use prost::Message;
-use sqlx::SqliteConnection;
+use sqlx::{Row, SqliteConnection, sqlite::SqliteRow};
 use tonic::Request;
 
 use crate::{
     Client, IntoAnyhow, ProgressReporter, VoteResult,
-    lwd_prc::{BlockId, BlockRange},
+    lwd_prc::{BlockId, BlockRange, CompactBlock},
 };
 
 pub async fn clear_blocks(connection: &mut SqliteConnection) -> VoteResult<()> {
     sqlx::query("DELETE FROM blocks")
-    .execute(connection)
-    .await?;
+        .execute(connection)
+        .await?;
     Ok(())
 }
 
@@ -21,6 +21,16 @@ pub async fn download_blocks<PR: ProgressReporter>(
     end: u32,
     progress_reporter: PR,
 ) -> VoteResult<()> {
+    let (c,): (u32,) =
+        sqlx::query_as("SELECT COUNT(*) FROM blocks WHERE height >= ?1 AND height <= ?2")
+            .bind(start)
+            .bind(end)
+            .fetch_one(&mut *connection)
+            .await?;
+    if c == end - start + 1 {
+        return Ok(());
+    }
+
     let mut blocks = client
         .get_block_range(Request::new(BlockRange {
             start: Some(BlockId {
@@ -59,6 +69,55 @@ pub async fn download_blocks<PR: ProgressReporter>(
     Ok(())
 }
 
+pub async fn extract_commitments<PR: ProgressReporter>(
+    connection: &mut SqliteConnection,
+    start: u32,
+    end: u32,
+    progress_reporter: PR,
+) -> VoteResult<()> {
+    let report_interval = (end - start + 1) / 20;
+    sqlx::query("DELETE FROM actions WHERE height >= ?1 AND height <= ?2")
+    .bind(start)
+    .bind(end)
+    .execute(&mut *connection)
+    .await?;
+    for h in start..=end {
+        if (h - start).is_multiple_of(report_interval) {
+            progress_reporter
+                .submit(format!("Extracted block #{h}"))
+                .await;
+        }
+        let block = sqlx::query("SELECT data FROM blocks WHERE height = ?1")
+            .bind(h)
+            .map(|r: SqliteRow| {
+                let data: Vec<u8> = r.get(0);
+                CompactBlock::decode(&*data).unwrap()
+            })
+            .fetch_one(&mut *connection)
+            .await?;
+        let mut idx = 0;
+        for tx in block.vtx.iter() {
+            for a in tx.actions.iter() {
+                let mut nf = a.nullifier.clone();
+                nf.reverse(); // nf are stored in BE so that we can use ORDER BY
+                let cmx = &a.cmx;
+                sqlx::query(
+                    "INSERT INTO actions(height, idx, nf, cmx)
+                VALUES (?1, ?2, ?3, ?4)",
+                )
+                .bind(block.height as u32)
+                .bind(idx)
+                .bind(&nf)
+                .bind(cmx)
+                .execute(&mut *connection)
+                .await?;
+                idx += 1;
+            }
+        }
+    }
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use tokio::sync::mpsc;
@@ -66,7 +125,7 @@ mod tests {
     use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
     use tonic::transport::{Channel, ClientTlsConfig};
 
-    use crate::{db::create_db, Client};
+    use crate::{Client, db::create_db};
 
     #[tokio::test]
     async fn test_download() {
@@ -81,7 +140,24 @@ mod tests {
             let pool = SqlitePool::connect_with(options).await.unwrap();
             let mut connection = pool.acquire().await.unwrap();
             create_db(&mut connection).await.unwrap();
-            super::download_blocks(&mut client, &mut connection, 3_000_000, 3_010_000, tx).await.unwrap();
+            super::download_blocks(&mut client, &mut connection, 3_000_000, 3_010_000, tx)
+                .await
+                .unwrap();
+        });
+        while let Some(message) = rx.recv().await {
+            println!("{message}");
+        }
+    }
+
+    #[tokio::test]
+    pub async fn test_extract() {
+        let options = SqliteConnectOptions::new().filename("zcvote.db");
+        let pool = SqlitePool::connect_with(options).await.unwrap();
+        let mut connection = pool.acquire().await.unwrap();
+        create_db(&mut connection).await.unwrap();
+        let (tx, mut rx) = mpsc::channel::<String>(1);
+        tokio::spawn(async move {
+            super::extract_commitments(&mut connection, 3_000_000, 3_010_000, tx).await.unwrap();
         });
         while let Some(message) = rx.recv().await {
             println!("{message}");

@@ -34,7 +34,7 @@ impl std::convert::From<CandidateChoice> for zcash_vote2::data::CandidateChoice 
     fn from(val: CandidateChoice) -> zcash_vote2::data::CandidateChoice {
         zcash_vote2::data::CandidateChoice {
             address: None,
-            choice: val.choice.into(),
+            choice: val.choice,
         }
     }
 }
