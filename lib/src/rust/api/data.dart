@@ -5,81 +5,36 @@
 
 import '../frb_generated.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
+import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
+part 'data.freezed.dart';
 
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`, `into`, `into`
 
-class CandidateChoice {
-  final String address;
-  final String choice;
-
-  const CandidateChoice({required this.address, required this.choice});
-
-  @override
-  int get hashCode => address.hashCode ^ choice.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is CandidateChoice &&
-          runtimeType == other.runtimeType &&
-          address == other.address &&
-          choice == other.choice;
+@freezed
+sealed class CandidateChoice with _$CandidateChoice {
+  const factory CandidateChoice({
+    required String address,
+    required String choice,
+  }) = _CandidateChoice;
 }
 
 /// Details of an election, including metadata, candidates, and election parameters.
-class Election {
-  final String name;
-  final String? seed;
-  final int startHeight;
-  final int endHeight;
-  final List<Question> questions;
-  final bool signatureRequired;
-
-  const Election({
-    required this.name,
-    this.seed,
-    required this.startHeight,
-    required this.endHeight,
-    required this.questions,
-    required this.signatureRequired,
-  });
-
-  @override
-  int get hashCode =>
-      name.hashCode ^
-      seed.hashCode ^
-      startHeight.hashCode ^
-      endHeight.hashCode ^
-      questions.hashCode ^
-      signatureRequired.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Election &&
-          runtimeType == other.runtimeType &&
-          name == other.name &&
-          seed == other.seed &&
-          startHeight == other.startHeight &&
-          endHeight == other.endHeight &&
-          questions == other.questions &&
-          signatureRequired == other.signatureRequired;
+@freezed
+sealed class Election with _$Election {
+  const factory Election({
+    required String name,
+    String? seed,
+    required int startHeight,
+    required int endHeight,
+    required List<Question> questions,
+    required bool signatureRequired,
+  }) = _Election;
 }
 
-class Question {
-  final String question;
-  final List<CandidateChoice> choices;
-
-  const Question({required this.question, required this.choices});
-
-  @override
-  int get hashCode => question.hashCode ^ choices.hashCode;
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Question &&
-          runtimeType == other.runtimeType &&
-          question == other.question &&
-          choices == other.choices;
+@freezed
+sealed class Question with _$Question {
+  const factory Question({
+    required String question,
+    required List<CandidateChoice> choices,
+  }) = _Question;
 }

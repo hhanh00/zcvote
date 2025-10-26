@@ -11,6 +11,7 @@ pub struct CandidateChoice {
 #[derive(Clone, Serialize, Deserialize, Default, Debug)]
 pub struct Election {
     pub name: String,
+    #[serde(skip)]
     pub seed: Option<String>, // only available to the creator
     pub start_height: u32,
     pub end_height: u32,

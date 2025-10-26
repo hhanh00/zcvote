@@ -6,12 +6,10 @@ import 'package:zcvote/pages/create.dart';
 final navigatorKey = GlobalKey<NavigatorState>();
 final RouteObserver<ModalRoute<void>> routeObserver =
     RouteObserver<ModalRoute<void>>();
-
 final createPageKey = GlobalKey<CreatePageState>();
 
 var router = GoRouter(
   initialLocation: '/vote',
-  observers: [routeObserver],
   navigatorKey: navigatorKey,
   routes: [
     StatefulShellRoute.indexedStack(
@@ -23,22 +21,21 @@ var router = GoRouter(
           routes: [
             GoRoute(
               path: '/vote',
-              pageBuilder: (context, state) =>
-                  NoTransitionPage(child: PlaceHolderPage("vote")),
+              builder: (context, state) => PlaceHolderPage("vote"),
             ),
           ],
         ),
         StatefulShellBranch(
+          observers: [routeObserver],
           routes: [
             GoRoute(
               path: '/create',
-              pageBuilder: (context, state) =>
-                  NoTransitionPage(child: CreatePage(key: createPageKey)),
+              builder: (context, state) => CreatePage(key: createPageKey),
               routes: [
                 GoRoute(
                   path: "edit",
-                  pageBuilder: (context, state) =>
-                      NoTransitionPage(child: CreateEditPage(state.extra as String)),
+                  builder: (context, state) =>
+                      CreateEditPage(state.extra as String),
                 ),
               ],
             ),
@@ -48,8 +45,7 @@ var router = GoRouter(
           routes: [
             GoRoute(
               path: '/deploy',
-              pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: PlaceHolderPage("deploy")),
+              builder: (context, state) => PlaceHolderPage("deploy"),
             ),
           ],
         ),
@@ -57,8 +53,7 @@ var router = GoRouter(
           routes: [
             GoRoute(
               path: '/verify',
-              pageBuilder: (context, state) =>
-                  const NoTransitionPage(child: PlaceHolderPage("verify")),
+              builder: (context, state) => PlaceHolderPage("verify"),
             ),
           ],
         ),
@@ -74,19 +69,7 @@ class ScaffoldWithNavBar extends ConsumerWidget {
 
   static final tabs = [
     BottomTabItem(label: 'Vote', icon: Icons.how_to_vote, route: '/vote'),
-    BottomTabItem(
-      label: 'Create',
-      icon: Icons.build,
-      route: '/create',
-      actions: [
-        IconButton(
-          onPressed: () {
-            createPageKey.currentState?.onNew();
-          },
-          icon: Icon(Icons.add),
-        ),
-      ],
-    ),
+    BottomTabItem(label: 'Create', icon: Icons.build, route: '/create'),
     BottomTabItem(label: 'Deploy', icon: Icons.hub, route: '/deploy'),
     BottomTabItem(label: 'Verify', icon: Icons.verified, route: '/verify'),
   ];
@@ -94,16 +77,13 @@ class ScaffoldWithNavBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentIndex = shell.currentIndex;
-    final current = tabs[currentIndex];
-    final actions = current.actions ?? [];
 
     return Scaffold(
-      appBar: AppBar(title: Text(current.label), actions: actions),
       body: shell,
       bottomNavigationBar: NavigationBar(
         selectedIndex: currentIndex,
         onDestinationSelected: (index) {
-          context.go(tabs[index].route);
+          shell.goBranch(index);
         },
         destinations: [
           for (final t in tabs)
@@ -118,13 +98,11 @@ class BottomTabItem {
   final String label;
   final IconData icon;
   final String route;
-  final List<Widget>? actions;
 
   const BottomTabItem({
     required this.label,
     required this.icon,
     required this.route,
-    this.actions,
   });
 }
 
