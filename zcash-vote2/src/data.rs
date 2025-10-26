@@ -1,5 +1,8 @@
 use orchard::vote::{Frontier, OrchardHash};
 use serde::{Deserialize, Serialize};
+use sqlx::SqliteConnection;
+
+use crate::ProgressReporter;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct CandidateChoice {
@@ -33,6 +36,27 @@ impl CandidateChoice {
         CandidateChoice {
             address: Some(address),
             choice,
+        }
+    }
+}
+
+impl Election {
+    pub async fn finalize<PR: ProgressReporter>(self, connection: &mut SqliteConnection, progress_reporter: PR) -> Self {
+        let questions = vec![];
+        let cmx = None;
+        let nf = None;
+        let cmx_frontier = None;
+
+        Election {
+            name: self.name,
+            seed: None,
+            start_height: self.start_height,
+            end_height: self.end_height,
+            questions,
+            signature_required: self.signature_required,
+            cmx,
+            nf,
+            cmx_frontier,
         }
     }
 }

@@ -17,6 +17,9 @@ tracing-subscriber = { workspace = true }
 
 rand_core = { workspace = true }
 bip39 = { workspace = true }
+prost = { workspace = true }
+tonic = { workspace = true }
+tonic-prost = { workspace = true }
 
 halo2_gadgets = { workspace = true }
 halo2_proofs = { workspace = true }

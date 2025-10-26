@@ -1,10 +1,33 @@
+use tokio::sync::mpsc;
+use tonic::transport::Channel;
+
 pub mod error;
 pub mod seed;
 pub mod db;
 pub mod data;
+pub mod download;
+
+#[path = "cash.z.wallet.sdk.rpc.rs"]
+pub mod lwd_prc;
 
 pub type VoteError = crate::error::Error;
 pub type VoteResult<T> = Result<T, VoteError>;
+pub type Client = lwd_prc::compact_tx_streamer_client::CompactTxStreamerClient<Channel>;
+
+pub trait ProgressReporter {
+    fn submit(&self, message: String) -> impl std::future::Future<Output = ()> + Send;
+}
+
+impl ProgressReporter for () {
+    async fn submit(&self, _message: String) {
+    }
+}
+
+impl ProgressReporter for mpsc::Sender<String> {
+    async fn submit(&self, message: String) {
+        let _ = self.send(message).await;
+    }
+}
 
 #[macro_export]
 macro_rules! tiu {
