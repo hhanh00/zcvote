@@ -140,7 +140,7 @@ mod tests {
             let pool = SqlitePool::connect_with(options).await.unwrap();
             let mut connection = pool.acquire().await.unwrap();
             create_db(&mut connection).await.unwrap();
-            super::download_blocks(&mut client, &mut connection, 3_000_000, 3_010_000, tx)
+            super::download_blocks(&mut client, &mut connection, 2_200_000, 3_000_000, tx)
                 .await
                 .unwrap();
         });
@@ -157,7 +157,7 @@ mod tests {
         create_db(&mut connection).await.unwrap();
         let (tx, mut rx) = mpsc::channel::<String>(1);
         tokio::spawn(async move {
-            super::extract_commitments(&mut connection, 3_000_000, 3_010_000, tx).await.unwrap();
+            super::extract_commitments(&mut connection, 2_200_000, 2_200_100, tx).await.unwrap();
         });
         while let Some(message) = rx.recv().await {
             println!("{message}");
