@@ -1,8 +1,17 @@
-use orchard::vote::{Frontier, OrchardHash};
+use bech32::{Bech32m, Hrp};
+use bip39::Mnemonic;
+use orchard::{
+    keys::{FullViewingKey, Scope, SpendingKey},
+    vote::{Frontier, OrchardHash},
+};
 use serde::{Deserialize, Serialize};
 use sqlx::SqliteConnection;
 
-use crate::ProgressReporter;
+use crate::{
+    IntoAnyhow, ProgressReporter, VoteError, VoteResult,
+    db::{list_cmxs, list_nfs},
+    trees::{compute_merkle_tree, make_nfs_ranges, orchard_hash},
+};
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct CandidateChoice {
@@ -41,13 +50,77 @@ impl CandidateChoice {
 }
 
 impl Election {
-    pub async fn finalize<PR: ProgressReporter>(self, connection: &mut SqliteConnection, progress_reporter: PR) -> Self {
-        let questions = vec![];
-        let cmx = None;
-        let nf = None;
-        let cmx_frontier = None;
+    pub async fn finalize<PR: ProgressReporter + 'static>(
+        self,
+        connection: &mut SqliteConnection,
+        progress_reporter: PR,
+    ) -> VoteResult<Self> {
+        let (seed,): (Option<String>,) =
+            sqlx::query_as("SELECT seed FROM election_defs WHERE name = ?1")
+                .bind(&self.name)
+                .fetch_one(&mut *connection)
+                .await?;
+        let seed = seed.ok_or_else(|| anyhow::anyhow!("Missing seed phrase"))?;
+        let hrp = Hrp::parse("zv").unwrap();
+        // derive addresses as zip32/question #/answer #
+        let questions = self
+            .questions
+            .into_iter()
+            .enumerate()
+            .map(|(i, q)| {
+                let choices = q
+                    .choices
+                    .into_iter()
+                    .enumerate()
+                    .map(|(j, c)| {
+                        let sk = derive_vote_key(&seed, i as u32, j as u32).unwrap();
+                        let fvk = FullViewingKey::from(&sk);
+                        let address = fvk.address_at(0u64, Scope::External);
+                        let address =
+                            bech32::encode::<Bech32m>(hrp, &address.to_raw_address_bytes())
+                                .unwrap();
+                        CandidateChoice {
+                            address: Some(address),
+                            choice: c.choice,
+                        }
+                    })
+                    .collect();
+                Question {
+                    question: q.question,
+                    choices,
+                }
+            })
+            .collect();
 
-        Election {
+        let start = self.start_height;
+        let end = self.end_height;
+        let mut nfs = list_nfs(&mut *connection, start, end).await?;
+        let cmxs = list_cmxs(&mut *connection, start, end).await?;
+
+        let (nf, cmx, frontier) = tokio::spawn(async move {
+            make_nfs_ranges(&mut nfs);
+            let (root, _) = compute_merkle_tree(&nfs, &[], &progress_reporter)
+                .await
+                .unwrap();
+            let nf = orchard_hash(root);
+
+            let end_pos = (cmxs.len() - 1) as u32;
+            let (root, path) = compute_merkle_tree(&cmxs, &[end_pos], &progress_reporter)
+                .await
+                .unwrap();
+            let frontier_path = &path[0];
+            let frontier = Frontier::from(frontier_path);
+            let cmx = orchard_hash(root);
+            Ok::<_, VoteError>((nf, cmx, frontier))
+        })
+        .await
+        .anyhow()??;
+
+        let nf = Some(nf);
+        let cmx = Some(cmx);
+        let cmx_frontier = Some(frontier);
+
+        Ok(Election {
             name: self.name,
             seed: None,
             start_height: self.start_height,
@@ -57,21 +130,45 @@ impl Election {
             cmx,
             nf,
             cmx_frontier,
-        }
+        })
     }
+}
+
+pub fn derive_vote_key(seed: &str, i: u32, j: u32) -> VoteResult<SpendingKey> {
+    let seed = Mnemonic::parse(seed).anyhow()?;
+    let seed = seed.to_seed("VoteOrchard");
+    let sk = SpendingKey::from_zip32_seed(&seed, i, j).unwrap();
+    Ok(sk)
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
-
     use anyhow::Result;
+    use sqlx::{
+        SqlitePool,
+        sqlite::SqliteConnectOptions,
+    };
+    use tokio::sync::mpsc;
 
-    #[test]
-    pub fn load_election() -> Result<()> {
-        let f = File::open("test-election.json")?;
-        let e = serde_json::from_reader::<_, super::Election>(&f)?;
-        println!("{:?}", &e);
+    use crate::data::Election;
+
+    #[tokio::test]
+    pub async fn load_election() -> Result<()> {
+        let options = SqliteConnectOptions::new().filename("zcvote.db");
+        let pool = SqlitePool::connect_with(options).await.unwrap();
+        let mut connection = pool.acquire().await.unwrap();
+        let (data,): (String,) =
+            sqlx::query_as("SELECT definition FROM election_defs WHERE name = 'jaja'")
+                .fetch_one(&mut *connection)
+                .await?;
+        let election: Election = serde_json::from_str(&data).unwrap();
+        let (tx, mut rx) = mpsc::channel::<String>(1);
+        tokio::spawn(async move {
+            election.finalize(&mut *connection, tx).await.unwrap();
+        });
+        while let Some(message) = rx.recv().await {
+            println!("{message}");
+        }
         Ok(())
     }
 }

@@ -4782,6 +4782,7 @@ name = "zcash-vote2"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bech32",
  "bip39",
  "halo2_gadgets 0.3.1",
  "halo2_proofs 0.3.1",

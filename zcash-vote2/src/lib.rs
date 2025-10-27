@@ -15,7 +15,7 @@ pub type VoteError = crate::error::Error;
 pub type VoteResult<T> = Result<T, VoteError>;
 pub type Client = lwd_prc::compact_tx_streamer_client::CompactTxStreamerClient<Channel>;
 
-pub trait ProgressReporter {
+pub trait ProgressReporter: Send + Sync {
     fn submit(&self, message: String) -> impl std::future::Future<Output = ()> + Send;
 }
 

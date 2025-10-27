@@ -13,18 +13,18 @@ pub const DEPTH: usize = 32;
 pub const EMPTY: u64 = 2;
 
 pub struct AuthPathFp {
-    position: u32,
-    value: Fp,
-    path: Vec<Fp>,
+    pub position: u32,
+    pub value: Fp,
+    pub path: Vec<Fp>,
     p: u32,
 }
 
-impl From<AuthPathFp> for Frontier {
-    fn from(value: AuthPathFp) -> Self {
+impl From<&AuthPathFp> for Frontier {
+    fn from(value: &AuthPathFp) -> Self {
         Self {
             position: value.position,
             leaf: orchard_hash(value.value),
-            ommers: value.path.into_iter().map(orchard_hash).collect(),
+            ommers: value.path.iter().map(|h| orchard_hash(*h)).collect(),
         }
     }
 }
@@ -74,7 +74,7 @@ pub fn locate_nullifiers(nfs: &[Fp], ranges: &[Fp]) -> VoteResult<Vec<u32>> {
 pub async fn compute_merkle_tree<PR: ProgressReporter>(
     leaves: &[Fp],
     pos_reqs: &[u32],
-    progress_reporter: PR,
+    progress_reporter: &PR,
 ) -> VoteResult<(Fp, Vec<AuthPathFp>)> {
     let mut paths = pos_reqs
         .iter()
@@ -164,7 +164,7 @@ mod tests {
         make_nfs_ranges(&mut nfs);
         let (tx, mut rx) = mpsc::channel::<String>(1);
         tokio::spawn(async move {
-            let (root, _) = compute_merkle_tree(&nfs, &[], tx).await.unwrap();
+            let (root, _) = compute_merkle_tree(&nfs, &[], &tx).await.unwrap();
             let exp_root = Fp::from_repr(tiu!(hex::decode("c9d8599cbd375bbcfa43d79b31813120eaae210baf6fc3570af25ab1e5245912").unwrap())).unwrap();
             assert_eq!(root, exp_root);
 
@@ -185,7 +185,7 @@ mod tests {
         let cmxs = list_cmxs(&mut connection, 2_200_000, 2_200_100).await?;
         let (tx, mut rx) = mpsc::channel::<String>(1);
         tokio::spawn(async move {
-            let (root, _) = compute_merkle_tree(&cmxs, &[], tx).await.unwrap();
+            let (root, _) = compute_merkle_tree(&cmxs, &[], &tx).await.unwrap();
             let exp_root = Fp::from_repr(tiu!(hex::decode("b870f8e006bbb08dd5ff688386c4fba52148aa52840d857341d476751bcec835").unwrap())).unwrap();
             assert_eq!(root, exp_root);
 
