@@ -1,8 +1,11 @@
 use halo2_proofs::pasta::Fp;
-use orchard::{tree::MerkleHashOrchard, vote::{Frontier, OrchardHash}};
-use num_integer::Integer;
-use pasta_curves::group::ff::PrimeField;
 use incrementalmerkletree::Hashable;
+use num_integer::Integer;
+use orchard::{
+    tree::MerkleHashOrchard,
+    vote::{Frontier, OrchardHash},
+};
+use pasta_curves::group::ff::PrimeField;
 
 use crate::{ProgressReporter, VoteError, VoteResult};
 
@@ -32,13 +35,19 @@ pub fn orchard_hash(value: Fp) -> OrchardHash {
 
 // "Expand" nfs to ranges nfs[i]+1, nfs[i+1]-1, ...
 pub fn make_nfs_ranges(nfs: &mut Vec<Fp>) {
-    nfs.resize(nfs.len() * 2, Fp::zero());
-    for i in (0..nfs.len()).rev() {
-        nfs[i * 2] = nfs[i] + Fp::one(); // the probability of overflow is negligeable
-        nfs[i * 2 + 1] = nfs[i] - Fp::one();
+    let len = nfs.len();
+    nfs.resize((len + 1) * 2, Fp::zero());
+    for i in (0..len).rev() {
+        nfs[i * 2 + 2] = nfs[i];
+    }
+    // the probability of overflow is negligeable
+    for i in 0..len {
+        nfs[i*2+1] = nfs[i*2+2];
+        nfs[i*2+1] -= Fp::one();
+        nfs[i*2+2] += Fp::one();
     }
     *nfs.first_mut().unwrap() = Fp::zero(); // min
-    *nfs.last_mut().unwrap() = Fp::one() - Fp::one(); // max
+    *nfs.last_mut().unwrap() = Fp::zero() - Fp::one(); // max
 }
 
 // Given a list of nullifiers and a sorted list of ranges
@@ -64,7 +73,7 @@ pub fn locate_nullifiers(nfs: &[Fp], ranges: &[Fp]) -> VoteResult<Vec<u32>> {
 
 pub async fn compute_merkle_tree<PR: ProgressReporter>(
     leaves: &[Fp],
-    pos_reqs: Vec<u32>,
+    pos_reqs: &[u32],
     progress_reporter: PR,
 ) -> VoteResult<(Fp, Vec<AuthPathFp>)> {
     let mut paths = pos_reqs
@@ -91,7 +100,9 @@ pub async fn compute_merkle_tree<PR: ProgressReporter>(
                 layer.push(er);
             }
         }
-        progress_reporter.submit(format!("Processing Layer #{i} with {} nodes", layer.len())).await;
+        progress_reporter
+            .submit(format!("Processing Layer #{i} with {} nodes", layer.len()))
+            .await;
 
         for path in paths.iter_mut() {
             let idx = path.p;
@@ -115,7 +126,7 @@ pub async fn compute_merkle_tree<PR: ProgressReporter>(
         }
 
         er = cmx_hash(i as u8, er, er);
-        if next_layer.len() & 1 == 1 {
+        if !next_layer.len().is_multiple_of(2) {
             next_layer.push(er);
         }
 
@@ -131,4 +142,38 @@ fn cmx_hash(level: u8, left: Fp, right: Fp) -> Fp {
     let right = MerkleHashOrchard::from_base(right);
     let h = MerkleHashOrchard::combine(incrementalmerkletree::Altitude::from(level), &left, &right);
     h.inner()
+}
+
+#[cfg(test)]
+mod tests {
+    use pasta_curves::Fp;
+    use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
+    use tokio::sync::mpsc;
+
+    use crate::{
+        db::list_nfs, tiu, trees::{compute_merkle_tree, make_nfs_ranges, orchard_hash}, VoteResult
+    };
+    use pasta_curves::group::ff::PrimeField;
+
+    #[tokio::test]
+    pub async fn test_nf_tree() -> VoteResult<()> {
+        let options = SqliteConnectOptions::new().filename("zcvote.db");
+        let pool = SqlitePool::connect_with(options).await.unwrap();
+        let mut connection = pool.acquire().await.unwrap();
+        let mut nfs = list_nfs(&mut connection, 2_200_000, 2_200_100).await?;
+        make_nfs_ranges(&mut nfs);
+        let (tx, mut rx) = mpsc::channel::<String>(1);
+        tokio::spawn(async move {
+            let (root, _) = compute_merkle_tree(&nfs, &[], tx).await.unwrap();
+            let exp_root = Fp::from_repr(tiu!(hex::decode("c9d8599cbd375bbcfa43d79b31813120eaae210baf6fc3570af25ab1e5245912").unwrap())).unwrap();
+            assert_eq!(root, exp_root);
+
+            let root = orchard_hash(root);
+            println!("ROOT: {}", hex::encode(&root.0));
+        });
+        while let Some(message) = rx.recv().await {
+            println!("{message}");
+        }
+        Ok(())
+    }
 }

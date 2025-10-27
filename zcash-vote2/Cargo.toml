@@ -21,6 +21,7 @@ prost = { workspace = true }
 tonic = { workspace = true }
 tonic-prost = { workspace = true }
 num-integer = { workspace = true }
+hex = { workspace = true }
 
 halo2_gadgets = { workspace = true }
 halo2_proofs = { workspace = true }
