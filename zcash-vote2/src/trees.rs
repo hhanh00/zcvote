@@ -25,7 +25,7 @@ pub fn locate_nullifiers(nfs: &[Fp], ranges: &[Fp]) -> VoteResult<Vec<u32>> {
     let mut poss = vec![];
     for nf in nfs {
         let pos = match ranges.binary_search(nf) {
-            Ok(p) => (p as u32).prev_multiple_of(2),
+            Ok(p) => p.prev_multiple_of(&2),
             Err(p) => {
                 if p.is_multiple_of(2) {
                     // fallen between ranges, nf is not in any range

@@ -20,7 +20,7 @@ bip39 = { workspace = true }
 prost = { workspace = true }
 tonic = { workspace = true }
 tonic-prost = { workspace = true }
-num_integer = { workspace = true }
+num-integer = { workspace = true }
 
 halo2_gadgets = { workspace = true }
 halo2_proofs = { workspace = true }

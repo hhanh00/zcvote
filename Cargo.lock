@@ -4785,6 +4785,7 @@ dependencies = [
  "bip39",
  "halo2_gadgets 0.3.1",
  "halo2_proofs 0.3.1",
+ "num-integer",
  "orchard 0.3.0",
  "prost",
  "rand_core",
