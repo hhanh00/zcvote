@@ -94,8 +94,8 @@ pub async fn list_nfs(connection: &mut SqliteConnection, start: u32, end: u32) -
     Ok(r)
 }
 
-pub async fn list_cmx(connection: &mut SqliteConnection, start: u32, end: u32) -> VoteResult<Vec<Fp>> {
-    let r= sqlx::query("SELECT cmx FROM actions WHERE height >= ?1 AND height <= ?2 ORDER BY (height, idx)")
+pub async fn list_cmxs(connection: &mut SqliteConnection, start: u32, end: u32) -> VoteResult<Vec<Fp>> {
+    let r= sqlx::query("SELECT cmx FROM actions WHERE height >= ?1 AND height <= ?2 ORDER BY height, idx")
     .bind(start)
     .bind(end)
     .map(|r: SqliteRow| {

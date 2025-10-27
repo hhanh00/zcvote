@@ -151,7 +151,7 @@ mod tests {
     use tokio::sync::mpsc;
 
     use crate::{
-        db::list_nfs, tiu, trees::{compute_merkle_tree, make_nfs_ranges, orchard_hash}, VoteResult
+        db::{list_cmxs, list_nfs}, tiu, trees::{compute_merkle_tree, make_nfs_ranges, orchard_hash}, VoteResult
     };
     use pasta_curves::group::ff::PrimeField;
 
@@ -166,6 +166,27 @@ mod tests {
         tokio::spawn(async move {
             let (root, _) = compute_merkle_tree(&nfs, &[], tx).await.unwrap();
             let exp_root = Fp::from_repr(tiu!(hex::decode("c9d8599cbd375bbcfa43d79b31813120eaae210baf6fc3570af25ab1e5245912").unwrap())).unwrap();
+            assert_eq!(root, exp_root);
+
+            let root = orchard_hash(root);
+            println!("ROOT: {}", hex::encode(&root.0));
+        });
+        while let Some(message) = rx.recv().await {
+            println!("{message}");
+        }
+        Ok(())
+    }
+
+    #[tokio::test]
+    pub async fn test_cmx_tree() -> VoteResult<()> {
+        let options = SqliteConnectOptions::new().filename("zcvote.db");
+        let pool = SqlitePool::connect_with(options).await.unwrap();
+        let mut connection = pool.acquire().await.unwrap();
+        let cmxs = list_cmxs(&mut connection, 2_200_000, 2_200_100).await?;
+        let (tx, mut rx) = mpsc::channel::<String>(1);
+        tokio::spawn(async move {
+            let (root, _) = compute_merkle_tree(&cmxs, &[], tx).await.unwrap();
+            let exp_root = Fp::from_repr(tiu!(hex::decode("b870f8e006bbb08dd5ff688386c4fba52148aa52840d857341d476751bcec835").unwrap())).unwrap();
             assert_eq!(root, exp_root);
 
             let root = orchard_hash(root);
