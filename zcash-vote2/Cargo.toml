@@ -24,6 +24,8 @@ num-integer = { workspace = true }
 
 halo2_gadgets = { workspace = true }
 halo2_proofs = { workspace = true }
+pasta_curves = { workspace = true }
+incrementalmerkletree = { workspace = true }
 orchard = { workspace = true }
 
 zcash_address = { workspace = true }
