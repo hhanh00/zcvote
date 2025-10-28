@@ -81,46 +81,14 @@ class CreateEditPage extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => CreateEditState();
 }
 
-class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
-  final startHeightController = TextEditingController();
-  final endHeightController = TextEditingController();
-  List<Question> questions = <Question>[];
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final route = ModalRoute.of(context);
-    if (route is PageRoute) {
-      routeObserver.subscribe(this, route);
-    }
-  }
-
-  @override
-  void dispose() {
-    routeObserver.unsubscribe(this);
-    super.dispose();
-  }
-
-  @override
-  void didPop() {
-    super.didPop();
-    final electionNotifier = ref.read(electionProvider(widget.name).notifier);
-    electionNotifier.build();
-    electionNotifier.save(
-      int.parse(startHeightController.text),
-      int.parse(endHeightController.text),
-      questions,
-    );
-  }
-
+class CreateEditState extends ConsumerState<CreateEditPage> {
   @override
   Widget build(BuildContext context) {
     final election = ref.watch(electionProvider(widget.name));
+    final electionNotifier = ref.read(electionProvider(widget.name).notifier);
+
     return election.when(
       data: (data) {
-        startHeightController.text = data.startHeight.toString();
-        endHeightController.text = data.endHeight.toString();
-
         return Scaffold(
           appBar: AppBar(
             actions: [
@@ -146,7 +114,11 @@ class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
                     FormBuilderTextField(
                       name: "startHeight",
                       decoration: InputDecoration(label: Text("Start Height")),
-                      controller: startHeightController,
+                      initialValue: data.startHeight.toString(),
+                      onChanged: (v) {
+                        if (v == null) return;
+                        electionNotifier.saveStartHeight(int.parse(v));
+                      },
                       validator: FormBuilderValidators.integer(
                         checkNullOrEmpty: true,
                       ),
@@ -154,7 +126,11 @@ class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
                     FormBuilderTextField(
                       name: "endHeight",
                       decoration: InputDecoration(label: Text("End Height")),
-                      controller: endHeightController,
+                      initialValue: data.endHeight.toString(),
+                      onChanged: (v) {
+                        if (v == null) return;
+                        electionNotifier.saveEndHeight(int.parse(v));
+                      },
                       validator: FormBuilderValidators.integer(
                         checkNullOrEmpty: true,
                       ),
@@ -163,7 +139,10 @@ class CreateEditState extends ConsumerState<CreateEditPage> with RouteAware {
                     QuestionListFormField(
                       name: "questions",
                       initialValue: data.questions,
-                      onChanged: (q) => setState(() => questions = q!),
+                      onChanged: (q) {
+                        if (q == null) return;
+                        electionNotifier.saveQuestions(q);
+                      },
                     ),
                   ],
                 ),
