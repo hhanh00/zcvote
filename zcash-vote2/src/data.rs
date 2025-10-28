@@ -153,7 +153,7 @@ mod tests {
     use crate::data::Election;
 
     #[tokio::test]
-    pub async fn load_election() -> Result<()> {
+    pub async fn test_finalize_election() -> Result<()> {
         let options = SqliteConnectOptions::new().filename("zcvote.db");
         let pool = SqlitePool::connect_with(options).await.unwrap();
         let mut connection = pool.acquire().await.unwrap();
@@ -163,12 +163,14 @@ mod tests {
                 .await?;
         let election: Election = serde_json::from_str(&data).unwrap();
         let (tx, mut rx) = mpsc::channel::<String>(1);
-        tokio::spawn(async move {
-            election.finalize(&mut *connection, tx).await.unwrap();
+        let task = tokio::spawn(async move {
+            election.finalize(&mut *connection, tx).await.unwrap()
         });
         while let Some(message) = rx.recv().await {
             println!("{message}");
         }
+        let e = task.await?;
+        println!("Finalized Election: {}", serde_json::to_string_pretty(&e).unwrap());
         Ok(())
     }
 }
