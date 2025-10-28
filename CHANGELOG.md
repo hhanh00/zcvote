@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.3.0](https://github.com/hhanh00/zcvote/compare/zcvote-v1.2.0...zcvote-v1.3.0) (2025-10-28)
+
+
+### Features
+
+* **builder:** finalize election definition ([#32](https://github.com/hhanh00/zcvote/issues/32)) ([8158c42](https://github.com/hhanh00/zcvote/commit/8158c428a3133a642a01cb194c61796733dedfe1))
+
+
+### Bug Fixes
+
+* **builder:** create election UI ([#27](https://github.com/hhanh00/zcvote/issues/27)) ([bf96313](https://github.com/hhanh00/zcvote/commit/bf9631365912b1a15c9608d32f188c802957c1b2))
+* **builder:** finalize election API ([#31](https://github.com/hhanh00/zcvote/issues/31)) ([fe8942f](https://github.com/hhanh00/zcvote/commit/fe8942f6a55cd84fbac778b725dee0ef2cc14032))
+* **builder:** finalize election test ([#29](https://github.com/hhanh00/zcvote/issues/29)) ([b6fb23a](https://github.com/hhanh00/zcvote/commit/b6fb23a5de681346bdca4617ffe17d774b24af04))
+
 ## [1.2.0](https://github.com/hhanh00/zcvote/compare/zcvote-v1.1.0...zcvote-v1.2.0) (2025-10-27)
 
 
