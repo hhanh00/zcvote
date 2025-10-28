@@ -20,13 +20,25 @@ class ElectionNotifier extends AsyncNotifier<Election> {
     return election;
   }
 
-  void save(int startHeight, int endHeight, List<Question> questions) async {
+  void saveStartHeight(int startHeight) async {
     final newState = await update(
-      (prev) => prev.copyWith(
-        startHeight: startHeight,
-        endHeight: endHeight,
-        questions: questions,
-      ),
+      (prev) => prev.copyWith(startHeight: startHeight),
+    );
+    final app = ref.read(appProvider);
+    app.saveElection(election: newState);
+  }
+
+  void saveEndHeight(int endHeight) async {
+    final newState = await update(
+      (prev) => prev.copyWith(endHeight: endHeight),
+    );
+    final app = ref.read(appProvider);
+    app.saveElection(election: newState);
+  }
+
+  void saveQuestions(List<Question> questions) async {
+    final newState = await update(
+      (prev) => prev.copyWith(questions: questions),
     );
     final app = ref.read(appProvider);
     app.saveElection(election: newState);
