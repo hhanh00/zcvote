@@ -2442,7 +2442,7 @@ checksum = "c08d65885ee38876c4f86fa503fb49d7b507c2b62552df7c70b2fce627e06381"
 [[package]]
 name = "orchard"
 version = "0.3.0"
-source = "git+https://github.com/hhanh00/orchard.git?rev=768c365#768c365e3d1caeabbf1bd0875e17ba8932283b06"
+source = "git+https://github.com/hhanh00/orchard.git?rev=7a0f18a6bde1bbe0bb703026880ad566076b0b16#7a0f18a6bde1bbe0bb703026880ad566076b0b16"
 dependencies = [
  "aes 0.7.5",
  "bincode",
