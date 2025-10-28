@@ -1,4 +1,4 @@
-use crate::{data::Election, seed::generate_seed, tiu, VoteResult};
+use crate::{data::Election, seed::generate_seed, tiu, IntoAnyhow, VoteResult};
 use halo2_proofs::pasta::{group::ff::PrimeField, Fp};
 use sqlx::{sqlite::SqliteRow, SqliteConnection, Row};
 
@@ -47,6 +47,16 @@ pub async fn list_election_defs(connection: &mut SqliteConnection) -> VoteResult
     Ok(elections)
 }
 
+pub async fn get_election(connection: &mut SqliteConnection, name: String) -> VoteResult<Election> {
+    let (seed, json): (String, String) = sqlx::query_as("SELECT seed, definition FROM election_defs WHERE name = ?1")
+    .bind(name)
+    .fetch_one(&mut *connection)
+    .await?;
+    let mut election = serde_json::from_str::<Election>(&json).anyhow()?;
+    election.seed = Some(seed);
+    Ok(election)
+}
+
 pub async fn new_election(connection: &mut SqliteConnection, name: String) -> VoteResult<Election> {
     let seed = generate_seed()?;
     let mut election = Election {
@@ -65,7 +75,7 @@ pub async fn new_election(connection: &mut SqliteConnection, name: String) -> Vo
     Ok(election)
 }
 
-pub async fn store_election(connection: &mut SqliteConnection, election: Election) -> VoteResult<()> {
+pub async fn store_election(connection: &mut SqliteConnection, election: &Election) -> VoteResult<()> {
     sqlx::query(
         "UPDATE election_defs SET definition = ?2 WHERE name = ?1")
     .bind(&election.name)

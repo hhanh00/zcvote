@@ -6,6 +6,8 @@ import 'package:zcvote/src/rust/frb_generated.dart';
 
 Logger logger = Logger();
 
+const LwdURL = "https://zec.rocks"; // TODO: Make this configurable
+
 Future<void> main() async {
   await RustLib.init();
   runApp(const MyApp());
