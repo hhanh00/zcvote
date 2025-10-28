@@ -4,8 +4,8 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:zcvote/main.dart';
 import 'package:zcvote/model.dart';
-import 'package:zcvote/router.dart';
 import 'package:zcvote/src/rust/api/data.dart';
 
 class CreatePage extends ConsumerStatefulWidget {
@@ -91,18 +91,21 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
   @override
   Widget build(BuildContext context) {
     final election = ref.watch(electionProvider(widget.name));
-    final electionNotifier = ref.read(electionProvider(widget.name).notifier);
+    final electionNotifier = ref.watch(electionProvider(widget.name).notifier);
 
     return election.when(
       data: (data) {
+        final locked = data.locked;
+
         return Scaffold(
           appBar: AppBar(
             actions: [
-              IconButton(
-                onPressed: () {
-                  createPageKey.currentState?.onNew();
-                },
-                icon: Icon(Icons.add),
+              locked ? IconButton(
+                onPressed: onUnlock,
+                icon: Icon(Icons.lock_open),
+              ) : IconButton(
+                onPressed: onFinalize,
+                icon: Icon(Icons.flag),
               ),
             ],
           ),
@@ -121,8 +124,9 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
                       name: "startHeight",
                       decoration: InputDecoration(label: Text("Start Height")),
                       initialValue: data.startHeight.toString(),
+                      readOnly: locked,
                       onChanged: (v) {
-                        if (v == null || v.isEmpty) return;
+                        if (locked || v == null || v.isEmpty) return;
                         electionNotifier.saveStartHeight(int.parse(v));
                       },
                       validator: FormBuilderValidators.integer(
@@ -133,8 +137,9 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
                       name: "endHeight",
                       decoration: InputDecoration(label: Text("End Height")),
                       initialValue: data.endHeight.toString(),
+                      readOnly: locked,
                       onChanged: (v) {
-                        if (v == null || v.isEmpty) return;
+                        if (locked || v == null || v.isEmpty) return;
                         electionNotifier.saveEndHeight(int.parse(v));
                       },
                       validator: FormBuilderValidators.integer(
@@ -145,8 +150,9 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
                     QuestionListFormField(
                       name: "questions",
                       initialValue: data.questions,
+                      readOnly: locked,
                       onChanged: (q) {
-                        if (q == null) return;
+                        if (locked || q == null) return;
                         electionNotifier.saveQuestions(q);
                       },
                     ),
@@ -161,16 +167,34 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
       loading: LinearProgressIndicator.new,
     );
   }
+
+  void onUnlock() {
+    // TODO: Add confirmation
+    final electionNotifier = ref.read(electionProvider(widget.name).notifier);
+    electionNotifier.unlock();
+  }
+
+  void onFinalize() async {
+    // TODO: Add confirmation
+    final electionNotifier = ref.read(electionProvider(widget.name).notifier);
+    final progress = electionNotifier.finalize();
+    progress.listen((m) => logger.i(m),
+    onDone: () {
+      ref.invalidate(listElectionsProvider);
+    });
+  }
 }
 
 class QuestionListFormField extends StatefulWidget {
   final String name;
   final List<Question>? initialValue;
+  final bool readOnly;
   final void Function(List<Question>?)? onChanged;
 
   const QuestionListFormField({
     required this.name,
     this.initialValue,
+    this.readOnly = false,
     this.onChanged,
     super.key,
   });
@@ -224,7 +248,7 @@ class QuestionListFormFieldState extends State<QuestionListFormField> {
                         ],
                       ),
                     ),
-                    SizedBox(
+                    if (!widget.readOnly) SizedBox(
                       width: 40,
                       child: Column(
                         children: [
@@ -258,6 +282,7 @@ class QuestionListFormFieldState extends State<QuestionListFormField> {
                   name: "question",
                   decoration: InputDecoration(label: Text("Question")),
                   initialValue: questions[selected!].question,
+                  readOnly: widget.readOnly,
                   onChanged: (v) {
                     setState(() {
                       final q = questions[selected!];
@@ -277,6 +302,7 @@ class QuestionListFormFieldState extends State<QuestionListFormField> {
                   initialValue: questions[selected!].choices
                       .map((a) => a.choice)
                       .join("\n"),
+                  readOnly: widget.readOnly,
                   onChanged: (v) {
                     setState(() {
                       final q = questions[selected!];
@@ -303,6 +329,7 @@ class QuestionListFormFieldState extends State<QuestionListFormField> {
     );
   }
 
+  // TODO
   void onUp() async {}
   void onDown() async {}
   void onDelete() async {}

@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => 1788545399;
+  int get rustContentHash => -325271041;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -78,6 +78,12 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
 }
 
 abstract class RustLibApi extends BaseApi {
+  Stream<String> crateApiAppAppFinalize({
+    required App that,
+    required Election election,
+    required String lwd,
+  });
+
   Future<List<Election>> crateApiAppAppListElectionDefs({required App that});
 
   App crateApiAppAppNew({required String dbName});
@@ -87,7 +93,7 @@ abstract class RustLibApi extends BaseApi {
     required String name,
   });
 
-  Future<void> crateApiAppAppSaveElection({
+  Future<void> crateApiAppAppStoreElection({
     required App that,
     required Election election,
   });
@@ -110,6 +116,50 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   });
 
   @override
+  Stream<String> crateApiAppAppFinalize({
+    required App that,
+    required Election election,
+    required String lwd,
+  }) {
+    final progressReporter = RustStreamSink<String>();
+    unawaited(
+      handler.executeNormal(
+        NormalTask(
+          callFfi: (port_) {
+            final serializer = SseSerializer(generalizedFrbRustBinding);
+            sse_encode_Auto_Ref_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerApp(
+              that,
+              serializer,
+            );
+            sse_encode_StreamSink_String_Sse(progressReporter, serializer);
+            sse_encode_box_autoadd_election(election, serializer);
+            sse_encode_String(lwd, serializer);
+            pdeCallFfi(
+              generalizedFrbRustBinding,
+              serializer,
+              funcId: 1,
+              port: port_,
+            );
+          },
+          codec: SseCodec(
+            decodeSuccessData: sse_decode_unit,
+            decodeErrorData: sse_decode_AnyhowException,
+          ),
+          constMeta: kCrateApiAppAppFinalizeConstMeta,
+          argValues: [that, progressReporter, election, lwd],
+          apiImpl: this,
+        ),
+      ),
+    );
+    return progressReporter.stream;
+  }
+
+  TaskConstMeta get kCrateApiAppAppFinalizeConstMeta => const TaskConstMeta(
+    debugName: "App_finalize",
+    argNames: ["that", "progressReporter", "election", "lwd"],
+  );
+
+  @override
   Future<List<Election>> crateApiAppAppListElectionDefs({required App that}) {
     return handler.executeNormal(
       NormalTask(
@@ -122,7 +172,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 1,
+            funcId: 2,
             port: port_,
           );
         },
@@ -150,7 +200,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
         callFfi: () {
           final serializer = SseSerializer(generalizedFrbRustBinding);
           sse_encode_String(dbName, serializer);
-          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 2)!;
+          return pdeCallFfi(generalizedFrbRustBinding, serializer, funcId: 3)!;
         },
         codec: SseCodec(
           decodeSuccessData:
@@ -184,7 +234,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 3,
+            funcId: 4,
             port: port_,
           );
         },
@@ -205,7 +255,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Future<void> crateApiAppAppSaveElection({
+  Future<void> crateApiAppAppStoreElection({
     required App that,
     required Election election,
   }) {
@@ -221,7 +271,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 4,
+            funcId: 5,
             port: port_,
           );
         },
@@ -229,17 +279,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
         ),
-        constMeta: kCrateApiAppAppSaveElectionConstMeta,
+        constMeta: kCrateApiAppAppStoreElectionConstMeta,
         argValues: [that, election],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiAppAppSaveElectionConstMeta => const TaskConstMeta(
-    debugName: "App_save_election",
-    argNames: ["that", "election"],
-  );
+  TaskConstMeta get kCrateApiAppAppStoreElectionConstMeta =>
+      const TaskConstMeta(
+        debugName: "App_store_election",
+        argNames: ["that", "election"],
+      );
 
   @override
   Future<void> crateApiAppInitApp() {
@@ -250,7 +301,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           pdeCallFfi(
             generalizedFrbRustBinding,
             serializer,
-            funcId: 5,
+            funcId: 6,
             port: port_,
           );
         },
@@ -310,6 +361,12 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RustStreamSink<String> dco_decode_StreamSink_String_Sse(dynamic raw) {
+    // Codec=Dco (DartCObject based), see doc to use other codecs
+    throw UnimplementedError();
+  }
+
+  @protected
   String dco_decode_String(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     return raw as String;
@@ -340,8 +397,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Election dco_decode_election(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 6)
-      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return Election(
       name: dco_decode_String(arr[0]),
       seed: dco_decode_opt_String(arr[1]),
@@ -349,6 +406,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       endHeight: dco_decode_u_32(arr[3]),
       questions: dco_decode_list_question(arr[4]),
       signatureRequired: dco_decode_bool(arr[5]),
+      locked: dco_decode_bool(arr[6]),
     );
   }
 
@@ -462,6 +520,14 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  RustStreamSink<String> sse_decode_StreamSink_String_Sse(
+    SseDeserializer deserializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    throw UnimplementedError('Unreachable ()');
+  }
+
+  @protected
   String sse_decode_String(SseDeserializer deserializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     var inner = sse_decode_list_prim_u_8_strict(deserializer);
@@ -496,6 +562,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_endHeight = sse_decode_u_32(deserializer);
     var var_questions = sse_decode_list_question(deserializer);
     var var_signatureRequired = sse_decode_bool(deserializer);
+    var var_locked = sse_decode_bool(deserializer);
     return Election(
       name: var_name,
       seed: var_seed,
@@ -503,6 +570,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       endHeight: var_endHeight,
       questions: var_questions,
       signatureRequired: var_signatureRequired,
+      locked: var_locked,
     );
   }
 
@@ -648,6 +716,23 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   }
 
   @protected
+  void sse_encode_StreamSink_String_Sse(
+    RustStreamSink<String> self,
+    SseSerializer serializer,
+  ) {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    sse_encode_String(
+      self.setupAndSerialize(
+        codec: SseCodec(
+          decodeSuccessData: sse_decode_String,
+          decodeErrorData: sse_decode_AnyhowException,
+        ),
+      ),
+      serializer,
+    );
+  }
+
+  @protected
   void sse_encode_String(String self, SseSerializer serializer) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     sse_encode_list_prim_u_8_strict(utf8.encoder.convert(self), serializer);
@@ -686,6 +771,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.endHeight, serializer);
     sse_encode_list_question(self.questions, serializer);
     sse_encode_bool(self.signatureRequired, serializer);
+    sse_encode_bool(self.locked, serializer);
   }
 
   @protected
@@ -794,14 +880,21 @@ class AppImpl extends RustOpaque implements App {
         RustLib.instance.api.rust_arc_decrement_strong_count_AppPtr,
   );
 
+  Stream<String> finalize({required Election election, required String lwd}) =>
+      RustLib.instance.api.crateApiAppAppFinalize(
+        that: this,
+        election: election,
+        lwd: lwd,
+      );
+
   Future<List<Election>> listElectionDefs() =>
       RustLib.instance.api.crateApiAppAppListElectionDefs(that: this);
 
   Future<Election> newElection({required String name}) =>
       RustLib.instance.api.crateApiAppAppNewElection(that: this, name: name);
 
-  Future<void> saveElection({required Election election}) => RustLib
+  Future<void> storeElection({required Election election}) => RustLib
       .instance
       .api
-      .crateApiAppAppSaveElection(that: this, election: election);
+      .crateApiAppAppStoreElection(that: this, election: election);
 }

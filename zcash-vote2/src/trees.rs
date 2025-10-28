@@ -169,7 +169,7 @@ mod tests {
             assert_eq!(root, exp_root);
 
             let root = orchard_hash(root);
-            println!("ROOT: {}", hex::encode(&root.0));
+            println!("ROOT: {}", hex::encode(root.0));
         });
         while let Some(message) = rx.recv().await {
             println!("{message}");
@@ -190,7 +190,7 @@ mod tests {
             assert_eq!(root, exp_root);
 
             let root = orchard_hash(root);
-            println!("ROOT: {}", hex::encode(&root.0));
+            println!("ROOT: {}", hex::encode(root.0));
         });
         while let Some(message) = rx.recv().await {
             println!("{message}");

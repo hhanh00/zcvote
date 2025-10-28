@@ -9,9 +9,9 @@ use tracing_subscriber::{
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
-use zcash_vote2::db::{create_db, list_election_defs, new_election, save_election};
+use zcash_vote2::{db::{create_db, get_election, list_election_defs, new_election, store_election}, download::connect, ProgressReporter};
 
-use crate::api::data::Election;
+use crate::{api::data::Election, frb_generated::StreamSink};
 
 #[frb(opaque)]
 pub struct App {
@@ -49,9 +49,25 @@ impl App {
             .map(|r| r.into())?)
     }
 
-    pub async fn save_election(&self, election: Election) -> Result<()> {
+    pub async fn store_election(&self, election: Election) -> Result<()> {
         let mut connection = self.pool.acquire().await?;
-        Ok(save_election(&mut connection, election.into()).await?)
+        Ok(store_election(&mut connection, &election.into()).await?)
+    }
+
+    pub async fn finalize(&self, progress_reporter: StreamSink<String>, election: Election, lwd: String) -> Result<()> {
+        let name = election.name.clone();
+        let mut connection = self.pool.acquire().await?;
+        let election = get_election(&mut connection, name).await?; // this has the seed
+        let connection = connection.detach();
+        let client = connect(lwd).await?;
+        election.finalize(connection, client, progress_reporter).await?;
+        Ok(())
+    }
+}
+
+impl ProgressReporter for StreamSink<String> {
+    async fn submit(&self, message: String) {
+        let _ = self.add(message);
     }
 }
 

@@ -8,10 +8,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::SqliteConnection;
 
 use crate::{
-    Client, IntoAnyhow, ProgressReporter, VoteError, VoteResult,
-    db::{list_cmxs, list_nfs},
-    download::{download_blocks, extract_commitments},
-    trees::{compute_merkle_tree, make_nfs_ranges, orchard_hash},
+    db::{list_cmxs, list_nfs, store_election}, download::{download_blocks, extract_commitments}, trees::{compute_merkle_tree, make_nfs_ranges, orchard_hash}, Client, IntoAnyhow, ProgressReporter, VoteError, VoteResult
 };
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
@@ -97,7 +94,7 @@ impl Election {
         let start = self.start_height;
         let end = self.end_height;
 
-        let (nf, cmx, frontier) = tokio::spawn(async move {
+        let (mut connection, nf, cmx, frontier) = tokio::spawn(async move {
             download_blocks(&mut client, &mut connection, start, end, &progress_reporter).await?;
             extract_commitments(&mut connection, start, end, &progress_reporter).await?;
 
@@ -117,7 +114,7 @@ impl Election {
             let frontier_path = &path[0];
             let frontier = Frontier::from(frontier_path);
             let cmx = orchard_hash(root);
-            Ok::<_, VoteError>((nf, cmx, frontier))
+            Ok::<_, VoteError>((connection, nf, cmx, frontier))
         })
         .await
         .anyhow()??;
@@ -126,7 +123,7 @@ impl Election {
         let cmx = Some(cmx);
         let cmx_frontier = Some(frontier);
 
-        Ok(Election {
+        let election = Election {
             name: self.name,
             seed: None,
             start_height: self.start_height,
@@ -136,7 +133,9 @@ impl Election {
             cmx,
             nf,
             cmx_frontier,
-        })
+        };
+        store_election(&mut connection, &election).await?;
+        Ok(election)
     }
 }
 

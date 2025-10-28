@@ -1,11 +1,20 @@
 use prost::Message;
 use sqlx::{Row, SqliteConnection, sqlite::SqliteRow};
-use tonic::Request;
+use tonic::{transport::{Channel, ClientTlsConfig}, Request};
 
 use crate::{
     Client, IntoAnyhow, ProgressReporter, VoteResult,
     lwd_prc::{BlockId, BlockRange, CompactBlock},
 };
+
+pub async fn connect(lwd: String) -> VoteResult<Client> {
+    let tls_config = ClientTlsConfig::new().with_enabled_roots();
+    let channel = Channel::from_shared(lwd).anyhow()?
+        .tls_config(tls_config)
+        .unwrap();
+    let client = Client::connect(channel).await.unwrap();
+    Ok(client)
+}
 
 pub async fn clear_blocks(connection: &mut SqliteConnection) -> VoteResult<()> {
     sqlx::query("DELETE FROM blocks")
@@ -77,10 +86,10 @@ pub async fn extract_commitments<PR: ProgressReporter>(
 ) -> VoteResult<()> {
     let report_interval = (end - start + 1) / 20;
     sqlx::query("DELETE FROM actions WHERE height >= ?1 AND height <= ?2")
-    .bind(start)
-    .bind(end)
-    .execute(&mut *connection)
-    .await?;
+        .bind(start)
+        .bind(end)
+        .execute(&mut *connection)
+        .await?;
     for h in start..=end {
         if (h - start).is_multiple_of(report_interval) {
             progress_reporter
@@ -157,7 +166,9 @@ mod tests {
         create_db(&mut connection).await.unwrap();
         let (tx, mut rx) = mpsc::channel::<String>(1);
         tokio::spawn(async move {
-            super::extract_commitments(&mut connection, 2_200_000, 2_210_000, &tx).await.unwrap();
+            super::extract_commitments(&mut connection, 2_200_000, 2_210_000, &tx)
+                .await
+                .unwrap();
         });
         while let Some(message) = rx.recv().await {
             println!("{message}");

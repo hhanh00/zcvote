@@ -265,7 +265,7 @@ as String,
 /// @nodoc
 mixin _$Election {
 
- String get name; String? get seed; int get startHeight; int get endHeight; List<Question> get questions; bool get signatureRequired;
+ String get name; String? get seed; int get startHeight; int get endHeight; List<Question> get questions; bool get signatureRequired; bool get locked;
 /// Create a copy of Election
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -276,16 +276,16 @@ $ElectionCopyWith<Election> get copyWith => _$ElectionCopyWithImpl<Election>(thi
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is Election&&(identical(other.name, name) || other.name == name)&&(identical(other.seed, seed) || other.seed == seed)&&(identical(other.startHeight, startHeight) || other.startHeight == startHeight)&&(identical(other.endHeight, endHeight) || other.endHeight == endHeight)&&const DeepCollectionEquality().equals(other.questions, questions)&&(identical(other.signatureRequired, signatureRequired) || other.signatureRequired == signatureRequired));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is Election&&(identical(other.name, name) || other.name == name)&&(identical(other.seed, seed) || other.seed == seed)&&(identical(other.startHeight, startHeight) || other.startHeight == startHeight)&&(identical(other.endHeight, endHeight) || other.endHeight == endHeight)&&const DeepCollectionEquality().equals(other.questions, questions)&&(identical(other.signatureRequired, signatureRequired) || other.signatureRequired == signatureRequired)&&(identical(other.locked, locked) || other.locked == locked));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,seed,startHeight,endHeight,const DeepCollectionEquality().hash(questions),signatureRequired);
+int get hashCode => Object.hash(runtimeType,name,seed,startHeight,endHeight,const DeepCollectionEquality().hash(questions),signatureRequired,locked);
 
 @override
 String toString() {
-  return 'Election(name: $name, seed: $seed, startHeight: $startHeight, endHeight: $endHeight, questions: $questions, signatureRequired: $signatureRequired)';
+  return 'Election(name: $name, seed: $seed, startHeight: $startHeight, endHeight: $endHeight, questions: $questions, signatureRequired: $signatureRequired, locked: $locked)';
 }
 
 
@@ -296,7 +296,7 @@ abstract mixin class $ElectionCopyWith<$Res>  {
   factory $ElectionCopyWith(Election value, $Res Function(Election) _then) = _$ElectionCopyWithImpl;
 @useResult
 $Res call({
- String name, String? seed, int startHeight, int endHeight, List<Question> questions, bool signatureRequired
+ String name, String? seed, int startHeight, int endHeight, List<Question> questions, bool signatureRequired, bool locked
 });
 
 
@@ -313,7 +313,7 @@ class _$ElectionCopyWithImpl<$Res>
 
 /// Create a copy of Election
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? seed = freezed,Object? startHeight = null,Object? endHeight = null,Object? questions = null,Object? signatureRequired = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? name = null,Object? seed = freezed,Object? startHeight = null,Object? endHeight = null,Object? questions = null,Object? signatureRequired = null,Object? locked = null,}) {
   return _then(_self.copyWith(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,seed: freezed == seed ? _self.seed : seed // ignore: cast_nullable_to_non_nullable
@@ -321,6 +321,7 @@ as String?,startHeight: null == startHeight ? _self.startHeight : startHeight //
 as int,endHeight: null == endHeight ? _self.endHeight : endHeight // ignore: cast_nullable_to_non_nullable
 as int,questions: null == questions ? _self.questions : questions // ignore: cast_nullable_to_non_nullable
 as List<Question>,signatureRequired: null == signatureRequired ? _self.signatureRequired : signatureRequired // ignore: cast_nullable_to_non_nullable
+as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -403,10 +404,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String? seed,  int startHeight,  int endHeight,  List<Question> questions,  bool signatureRequired)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String name,  String? seed,  int startHeight,  int endHeight,  List<Question> questions,  bool signatureRequired,  bool locked)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Election() when $default != null:
-return $default(_that.name,_that.seed,_that.startHeight,_that.endHeight,_that.questions,_that.signatureRequired);case _:
+return $default(_that.name,_that.seed,_that.startHeight,_that.endHeight,_that.questions,_that.signatureRequired,_that.locked);case _:
   return orElse();
 
 }
@@ -424,10 +425,10 @@ return $default(_that.name,_that.seed,_that.startHeight,_that.endHeight,_that.qu
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String? seed,  int startHeight,  int endHeight,  List<Question> questions,  bool signatureRequired)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String name,  String? seed,  int startHeight,  int endHeight,  List<Question> questions,  bool signatureRequired,  bool locked)  $default,) {final _that = this;
 switch (_that) {
 case _Election():
-return $default(_that.name,_that.seed,_that.startHeight,_that.endHeight,_that.questions,_that.signatureRequired);}
+return $default(_that.name,_that.seed,_that.startHeight,_that.endHeight,_that.questions,_that.signatureRequired,_that.locked);}
 }
 /// A variant of `when` that fallback to returning `null`
 ///
@@ -441,10 +442,10 @@ return $default(_that.name,_that.seed,_that.startHeight,_that.endHeight,_that.qu
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String? seed,  int startHeight,  int endHeight,  List<Question> questions,  bool signatureRequired)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String name,  String? seed,  int startHeight,  int endHeight,  List<Question> questions,  bool signatureRequired,  bool locked)?  $default,) {final _that = this;
 switch (_that) {
 case _Election() when $default != null:
-return $default(_that.name,_that.seed,_that.startHeight,_that.endHeight,_that.questions,_that.signatureRequired);case _:
+return $default(_that.name,_that.seed,_that.startHeight,_that.endHeight,_that.questions,_that.signatureRequired,_that.locked);case _:
   return null;
 
 }
@@ -456,7 +457,7 @@ return $default(_that.name,_that.seed,_that.startHeight,_that.endHeight,_that.qu
 
 
 class _Election implements Election {
-  const _Election({required this.name, this.seed, required this.startHeight, required this.endHeight, required final  List<Question> questions, required this.signatureRequired}): _questions = questions;
+  const _Election({required this.name, this.seed, required this.startHeight, required this.endHeight, required final  List<Question> questions, required this.signatureRequired, required this.locked}): _questions = questions;
   
 
 @override final  String name;
@@ -471,6 +472,7 @@ class _Election implements Election {
 }
 
 @override final  bool signatureRequired;
+@override final  bool locked;
 
 /// Create a copy of Election
 /// with the given fields replaced by the non-null parameter values.
@@ -482,16 +484,16 @@ _$ElectionCopyWith<_Election> get copyWith => __$ElectionCopyWithImpl<_Election>
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Election&&(identical(other.name, name) || other.name == name)&&(identical(other.seed, seed) || other.seed == seed)&&(identical(other.startHeight, startHeight) || other.startHeight == startHeight)&&(identical(other.endHeight, endHeight) || other.endHeight == endHeight)&&const DeepCollectionEquality().equals(other._questions, _questions)&&(identical(other.signatureRequired, signatureRequired) || other.signatureRequired == signatureRequired));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Election&&(identical(other.name, name) || other.name == name)&&(identical(other.seed, seed) || other.seed == seed)&&(identical(other.startHeight, startHeight) || other.startHeight == startHeight)&&(identical(other.endHeight, endHeight) || other.endHeight == endHeight)&&const DeepCollectionEquality().equals(other._questions, _questions)&&(identical(other.signatureRequired, signatureRequired) || other.signatureRequired == signatureRequired)&&(identical(other.locked, locked) || other.locked == locked));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,name,seed,startHeight,endHeight,const DeepCollectionEquality().hash(_questions),signatureRequired);
+int get hashCode => Object.hash(runtimeType,name,seed,startHeight,endHeight,const DeepCollectionEquality().hash(_questions),signatureRequired,locked);
 
 @override
 String toString() {
-  return 'Election(name: $name, seed: $seed, startHeight: $startHeight, endHeight: $endHeight, questions: $questions, signatureRequired: $signatureRequired)';
+  return 'Election(name: $name, seed: $seed, startHeight: $startHeight, endHeight: $endHeight, questions: $questions, signatureRequired: $signatureRequired, locked: $locked)';
 }
 
 
@@ -502,7 +504,7 @@ abstract mixin class _$ElectionCopyWith<$Res> implements $ElectionCopyWith<$Res>
   factory _$ElectionCopyWith(_Election value, $Res Function(_Election) _then) = __$ElectionCopyWithImpl;
 @override @useResult
 $Res call({
- String name, String? seed, int startHeight, int endHeight, List<Question> questions, bool signatureRequired
+ String name, String? seed, int startHeight, int endHeight, List<Question> questions, bool signatureRequired, bool locked
 });
 
 
@@ -519,7 +521,7 @@ class __$ElectionCopyWithImpl<$Res>
 
 /// Create a copy of Election
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? seed = freezed,Object? startHeight = null,Object? endHeight = null,Object? questions = null,Object? signatureRequired = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? name = null,Object? seed = freezed,Object? startHeight = null,Object? endHeight = null,Object? questions = null,Object? signatureRequired = null,Object? locked = null,}) {
   return _then(_Election(
 name: null == name ? _self.name : name // ignore: cast_nullable_to_non_nullable
 as String,seed: freezed == seed ? _self.seed : seed // ignore: cast_nullable_to_non_nullable
@@ -527,6 +529,7 @@ as String?,startHeight: null == startHeight ? _self.startHeight : startHeight //
 as int,endHeight: null == endHeight ? _self.endHeight : endHeight // ignore: cast_nullable_to_non_nullable
 as int,questions: null == questions ? _self._questions : questions // ignore: cast_nullable_to_non_nullable
 as List<Question>,signatureRequired: null == signatureRequired ? _self.signatureRequired : signatureRequired // ignore: cast_nullable_to_non_nullable
+as bool,locked: null == locked ? _self.locked : locked // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
