@@ -19,7 +19,7 @@ pub async fn download_blocks<PR: ProgressReporter>(
     connection: &mut SqliteConnection,
     start: u32,
     end: u32,
-    progress_reporter: PR,
+    progress_reporter: &PR,
 ) -> VoteResult<()> {
     let (c,): (u32,) =
         sqlx::query_as("SELECT COUNT(*) FROM blocks WHERE height >= ?1 AND height <= ?2")
@@ -73,7 +73,7 @@ pub async fn extract_commitments<PR: ProgressReporter>(
     connection: &mut SqliteConnection,
     start: u32,
     end: u32,
-    progress_reporter: PR,
+    progress_reporter: &PR,
 ) -> VoteResult<()> {
     let report_interval = (end - start + 1) / 20;
     sqlx::query("DELETE FROM actions WHERE height >= ?1 AND height <= ?2")
@@ -129,18 +129,18 @@ mod tests {
 
     #[tokio::test]
     async fn test_download() {
-        let tls_config = ClientTlsConfig::new().with_enabled_roots();
-        let channel = Channel::from_static("https://zec.rocks")
-            .tls_config(tls_config)
-            .unwrap();
         let (tx, mut rx) = mpsc::channel::<String>(1);
         tokio::spawn(async move {
+            let tls_config = ClientTlsConfig::new().with_enabled_roots();
+            let channel = Channel::from_static("https://zec.rocks")
+                .tls_config(tls_config)
+                .unwrap();
             let mut client = Client::connect(channel).await.unwrap();
             let options = SqliteConnectOptions::new().filename("zcvote.db");
             let pool = SqlitePool::connect_with(options).await.unwrap();
             let mut connection = pool.acquire().await.unwrap();
             create_db(&mut connection).await.unwrap();
-            super::download_blocks(&mut client, &mut connection, 2_200_000, 2_220_000, tx)
+            super::download_blocks(&mut client, &mut connection, 2_200_000, 2_220_000, &tx)
                 .await
                 .unwrap();
         });
@@ -157,7 +157,7 @@ mod tests {
         create_db(&mut connection).await.unwrap();
         let (tx, mut rx) = mpsc::channel::<String>(1);
         tokio::spawn(async move {
-            super::extract_commitments(&mut connection, 2_200_000, 2_210_000, tx).await.unwrap();
+            super::extract_commitments(&mut connection, 2_200_000, 2_210_000, &tx).await.unwrap();
         });
         while let Some(message) = rx.recv().await {
             println!("{message}");

@@ -21,7 +21,12 @@ class CreatePageState extends ConsumerState<CreatePage> {
     final elections = ref.watch(listElectionsProvider);
     switch (elections) {
       case AsyncValue(:final value?):
-        return ListView(
+        return Scaffold(
+          appBar: AppBar(
+            title: Text("Create Elections"),
+            actions: [IconButton(onPressed: onNew, icon: Icon(Icons.note_add))],
+          ),
+          body: ListView(
           children: [
             for (var v in value)
               ListTile(
@@ -29,6 +34,7 @@ class CreatePageState extends ConsumerState<CreatePage> {
                 onTap: () => context.push("/create/edit", extra: v.name),
               ),
           ],
+          ),
         );
       case AsyncValue(error: != null):
         return Text("Error: ${elections.error}");
@@ -116,7 +122,7 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
                       decoration: InputDecoration(label: Text("Start Height")),
                       initialValue: data.startHeight.toString(),
                       onChanged: (v) {
-                        if (v == null) return;
+                        if (v == null || v.isEmpty) return;
                         electionNotifier.saveStartHeight(int.parse(v));
                       },
                       validator: FormBuilderValidators.integer(
@@ -128,7 +134,7 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
                       decoration: InputDecoration(label: Text("End Height")),
                       initialValue: data.endHeight.toString(),
                       onChanged: (v) {
-                        if (v == null) return;
+                        if (v == null || v.isEmpty) return;
                         electionNotifier.saveEndHeight(int.parse(v));
                       },
                       validator: FormBuilderValidators.integer(

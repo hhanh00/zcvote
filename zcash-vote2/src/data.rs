@@ -8,8 +8,9 @@ use serde::{Deserialize, Serialize};
 use sqlx::SqliteConnection;
 
 use crate::{
-    IntoAnyhow, ProgressReporter, VoteError, VoteResult,
+    Client, IntoAnyhow, ProgressReporter, VoteError, VoteResult,
     db::{list_cmxs, list_nfs},
+    download::{download_blocks, extract_commitments},
     trees::{compute_merkle_tree, make_nfs_ranges, orchard_hash},
 };
 
@@ -52,13 +53,14 @@ impl CandidateChoice {
 impl Election {
     pub async fn finalize<PR: ProgressReporter + 'static>(
         self,
-        connection: &mut SqliteConnection,
+        mut connection: SqliteConnection,
+        mut client: Client,
         progress_reporter: PR,
     ) -> VoteResult<Self> {
         let (seed,): (Option<String>,) =
             sqlx::query_as("SELECT seed FROM election_defs WHERE name = ?1")
                 .bind(&self.name)
-                .fetch_one(&mut *connection)
+                .fetch_one(&mut connection)
                 .await?;
         let seed = seed.ok_or_else(|| anyhow::anyhow!("Missing seed phrase"))?;
         let hrp = Hrp::parse("zv").unwrap();
@@ -94,10 +96,14 @@ impl Election {
 
         let start = self.start_height;
         let end = self.end_height;
-        let mut nfs = list_nfs(&mut *connection, start, end).await?;
-        let cmxs = list_cmxs(&mut *connection, start, end).await?;
 
         let (nf, cmx, frontier) = tokio::spawn(async move {
+            download_blocks(&mut client, &mut connection, start, end, &progress_reporter).await?;
+            extract_commitments(&mut connection, start, end, &progress_reporter).await?;
+
+            let mut nfs = list_nfs(&mut connection, start, end).await?;
+            let cmxs = list_cmxs(&mut connection, start, end).await?;
+
             make_nfs_ranges(&mut nfs);
             let (root, _) = compute_merkle_tree(&nfs, &[], &progress_reporter)
                 .await
@@ -144,25 +150,31 @@ pub fn derive_vote_key(seed: &str, i: u32, j: u32) -> VoteResult<SpendingKey> {
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
-    use orchard::vote::OrchardHash;
-    use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
+    use sqlx::{sqlite::SqliteConnectOptions, SqlitePool};
     use tokio::sync::mpsc;
+    use tonic::transport::{Channel, ClientTlsConfig};
 
-    use crate::data::Election;
+    use crate::{data::Election, Client};
 
     #[tokio::test]
     pub async fn test_finalize_election() -> Result<()> {
+        let tls_config = ClientTlsConfig::new().with_enabled_roots();
+        let channel = Channel::from_static("https://zec.rocks")
+            .tls_config(tls_config)
+            .unwrap();
+        let client = Client::connect(channel).await.unwrap();
         let options = SqliteConnectOptions::new().filename("zcvote.db");
         let pool = SqlitePool::connect_with(options).await.unwrap();
-        let mut connection = pool.acquire().await.unwrap();
+        let connection = pool.acquire().await.unwrap();
+        let mut connection = connection.detach();
+        // jaja must start at 2200 000 and end at 2200 100
         let (data,): (String,) =
             sqlx::query_as("SELECT definition FROM election_defs WHERE name = 'jaja'")
-                .fetch_one(&mut *connection)
+                .fetch_one(&mut connection)
                 .await?;
         let election: Election = serde_json::from_str(&data).unwrap();
         let (tx, mut rx) = mpsc::channel::<String>(1);
-        let task =
-            tokio::spawn(async move { election.finalize(&mut *connection, tx).await.unwrap() });
+        let task = tokio::spawn(async move { election.finalize(connection, client, tx).await.unwrap() });
         while let Some(message) = rx.recv().await {
             println!("{message}");
         }
