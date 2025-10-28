@@ -9,7 +9,7 @@ use tracing_subscriber::{
     layer::SubscriberExt,
     util::SubscriberInitExt,
 };
-use zcash_vote2::db::{create_db, list_election_defs, new_election, save_election};
+use zcash_vote2::db::{create_db, list_election_defs, new_election, store_election};
 
 use crate::api::data::Election;
 
@@ -49,9 +49,9 @@ impl App {
             .map(|r| r.into())?)
     }
 
-    pub async fn save_election(&self, election: Election) -> Result<()> {
+    pub async fn store_election(&self, election: Election) -> Result<()> {
         let mut connection = self.pool.acquire().await?;
-        Ok(save_election(&mut connection, election.into()).await?)
+        Ok(store_election(&mut connection, election.into()).await?)
     }
 }
 

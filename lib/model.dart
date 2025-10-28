@@ -25,7 +25,7 @@ class ElectionNotifier extends AsyncNotifier<Election> {
       (prev) => prev.copyWith(startHeight: startHeight),
     );
     final app = ref.read(appProvider);
-    app.saveElection(election: newState);
+    app.storeElection(election: newState);
   }
 
   void saveEndHeight(int endHeight) async {
@@ -33,7 +33,7 @@ class ElectionNotifier extends AsyncNotifier<Election> {
       (prev) => prev.copyWith(endHeight: endHeight),
     );
     final app = ref.read(appProvider);
-    app.saveElection(election: newState);
+    app.storeElection(election: newState);
   }
 
   void saveQuestions(List<Question> questions) async {
@@ -41,7 +41,7 @@ class ElectionNotifier extends AsyncNotifier<Election> {
       (prev) => prev.copyWith(questions: questions),
     );
     final app = ref.read(appProvider);
-    app.saveElection(election: newState);
+    app.storeElection(election: newState);
   }
 }
 

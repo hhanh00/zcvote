@@ -25,6 +25,7 @@ sealed class Election with _$Election {
     required int endHeight,
     required List<Question> questions,
     required bool signatureRequired,
+    required bool locked,
   }) = _Election;
 }
 

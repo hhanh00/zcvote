@@ -102,7 +102,7 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
                 onPressed: () {
                   createPageKey.currentState?.onNew();
                 },
-                icon: Icon(Icons.add),
+                icon: Icon(Icons.lock_open),
               ),
             ],
           ),

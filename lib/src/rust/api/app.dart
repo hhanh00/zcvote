@@ -18,5 +18,5 @@ abstract class App implements RustOpaqueInterface {
 
   Future<Election> newElection({required String name});
 
-  Future<void> saveElection({required Election election});
+  Future<void> storeElection({required Election election});
 }

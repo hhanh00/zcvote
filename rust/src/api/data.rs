@@ -19,6 +19,7 @@ pub struct Election {
     pub end_height: u32,
     pub questions: Vec<Question>,
     pub signature_required: bool,
+    pub locked: bool,
 }
 
 #[derive(Convert)]
@@ -50,6 +51,7 @@ impl std::convert::From<zcash_vote2::data::Election> for Election {
             end_height: this.end_height,
             questions: this.questions.into_iter().map(|a| a.into()).collect(),
             signature_required: this.signature_required,
+            locked: this.cmx_frontier.is_some(),
         }
     }
 }

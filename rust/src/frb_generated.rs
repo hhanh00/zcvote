@@ -38,7 +38,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.11.1";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1788545399;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -200687402;
 
 // Section: executor
 
@@ -191,7 +191,7 @@ fn wire__crate__api__app__App_new_election_impl(
         },
     )
 }
-fn wire__crate__api__app__App_save_election_impl(
+fn wire__crate__api__app__App_store_election_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -199,7 +199,7 @@ fn wire__crate__api__app__App_save_election_impl(
 ) {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "App_save_election",
+            debug_name: "App_store_election",
             port: Some(port_),
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
         },
@@ -239,7 +239,7 @@ fn wire__crate__api__app__App_save_election_impl(
                         }
                         let api_that_guard = api_that_guard.unwrap();
                         let output_ok =
-                            crate::api::app::App::save_election(&*api_that_guard, api_election)
+                            crate::api::app::App::store_election(&*api_that_guard, api_election)
                                 .await?;
                         Ok(output_ok)
                     })()
@@ -348,6 +348,7 @@ impl SseDecode for crate::api::data::Election {
         let mut var_endHeight = <u32>::sse_decode(deserializer);
         let mut var_questions = <Vec<crate::api::data::Question>>::sse_decode(deserializer);
         let mut var_signatureRequired = <bool>::sse_decode(deserializer);
+        let mut var_locked = <bool>::sse_decode(deserializer);
         return crate::api::data::Election {
             name: var_name,
             seed: var_seed,
@@ -355,6 +356,7 @@ impl SseDecode for crate::api::data::Election {
             end_height: var_endHeight,
             questions: var_questions,
             signature_required: var_signatureRequired,
+            locked: var_locked,
         };
     }
 }
@@ -476,7 +478,7 @@ fn pde_ffi_dispatcher_primary_impl(
     match func_id {
         1 => wire__crate__api__app__App_list_election_defs_impl(port, ptr, rust_vec_len, data_len),
         3 => wire__crate__api__app__App_new_election_impl(port, ptr, rust_vec_len, data_len),
-        4 => wire__crate__api__app__App_save_election_impl(port, ptr, rust_vec_len, data_len),
+        4 => wire__crate__api__app__App_store_election_impl(port, ptr, rust_vec_len, data_len),
         5 => wire__crate__api__app__init_app_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
@@ -539,6 +541,7 @@ impl flutter_rust_bridge::IntoDart for crate::api::data::Election {
             self.end_height.into_into_dart().into_dart(),
             self.questions.into_into_dart().into_dart(),
             self.signature_required.into_into_dart().into_dart(),
+            self.locked.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -622,6 +625,7 @@ impl SseEncode for crate::api::data::Election {
         <u32>::sse_encode(self.end_height, serializer);
         <Vec<crate::api::data::Question>>::sse_encode(self.questions, serializer);
         <bool>::sse_encode(self.signature_required, serializer);
+        <bool>::sse_encode(self.locked, serializer);
     }
 }
 

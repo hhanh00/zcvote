@@ -65,12 +65,7 @@ pub async fn new_election(connection: &mut SqliteConnection, name: String) -> Vo
     Ok(election)
 }
 
-pub async fn save_election(connection: &mut SqliteConnection, mut election: Election) -> VoteResult<()> {
-    // Saving erases the cmx/nf/frontier since we are not sure that they are still valid
-    election.cmx = None;
-    election.nf = None;
-    election.cmx_frontier = None;
-
+pub async fn store_election(connection: &mut SqliteConnection, election: Election) -> VoteResult<()> {
     sqlx::query(
         "UPDATE election_defs SET definition = ?2 WHERE name = ?1")
     .bind(&election.name)

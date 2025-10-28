@@ -67,7 +67,7 @@ class RustLib extends BaseEntrypoint<RustLibApi, RustLibApiImpl, RustLibWire> {
   String get codegenVersion => '2.11.1';
 
   @override
-  int get rustContentHash => 1788545399;
+  int get rustContentHash => -200687402;
 
   static const kDefaultExternalLibraryLoaderConfig =
       ExternalLibraryLoaderConfig(
@@ -87,7 +87,7 @@ abstract class RustLibApi extends BaseApi {
     required String name,
   });
 
-  Future<void> crateApiAppAppSaveElection({
+  Future<void> crateApiAppAppStoreElection({
     required App that,
     required Election election,
   });
@@ -205,7 +205,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   );
 
   @override
-  Future<void> crateApiAppAppSaveElection({
+  Future<void> crateApiAppAppStoreElection({
     required App that,
     required Election election,
   }) {
@@ -229,17 +229,18 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
           decodeSuccessData: sse_decode_unit,
           decodeErrorData: sse_decode_AnyhowException,
         ),
-        constMeta: kCrateApiAppAppSaveElectionConstMeta,
+        constMeta: kCrateApiAppAppStoreElectionConstMeta,
         argValues: [that, election],
         apiImpl: this,
       ),
     );
   }
 
-  TaskConstMeta get kCrateApiAppAppSaveElectionConstMeta => const TaskConstMeta(
-    debugName: "App_save_election",
-    argNames: ["that", "election"],
-  );
+  TaskConstMeta get kCrateApiAppAppStoreElectionConstMeta =>
+      const TaskConstMeta(
+        debugName: "App_store_election",
+        argNames: ["that", "election"],
+      );
 
   @override
   Future<void> crateApiAppInitApp() {
@@ -340,8 +341,8 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
   Election dco_decode_election(dynamic raw) {
     // Codec=Dco (DartCObject based), see doc to use other codecs
     final arr = raw as List<dynamic>;
-    if (arr.length != 6)
-      throw Exception('unexpected arr length: expect 6 but see ${arr.length}');
+    if (arr.length != 7)
+      throw Exception('unexpected arr length: expect 7 but see ${arr.length}');
     return Election(
       name: dco_decode_String(arr[0]),
       seed: dco_decode_opt_String(arr[1]),
@@ -349,6 +350,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       endHeight: dco_decode_u_32(arr[3]),
       questions: dco_decode_list_question(arr[4]),
       signatureRequired: dco_decode_bool(arr[5]),
+      locked: dco_decode_bool(arr[6]),
     );
   }
 
@@ -496,6 +498,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     var var_endHeight = sse_decode_u_32(deserializer);
     var var_questions = sse_decode_list_question(deserializer);
     var var_signatureRequired = sse_decode_bool(deserializer);
+    var var_locked = sse_decode_bool(deserializer);
     return Election(
       name: var_name,
       seed: var_seed,
@@ -503,6 +506,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
       endHeight: var_endHeight,
       questions: var_questions,
       signatureRequired: var_signatureRequired,
+      locked: var_locked,
     );
   }
 
@@ -686,6 +690,7 @@ class RustLibApiImpl extends RustLibApiImplPlatform implements RustLibApi {
     sse_encode_u_32(self.endHeight, serializer);
     sse_encode_list_question(self.questions, serializer);
     sse_encode_bool(self.signatureRequired, serializer);
+    sse_encode_bool(self.locked, serializer);
   }
 
   @protected
@@ -800,8 +805,8 @@ class AppImpl extends RustOpaque implements App {
   Future<Election> newElection({required String name}) =>
       RustLib.instance.api.crateApiAppAppNewElection(that: this, name: name);
 
-  Future<void> saveElection({required Election election}) => RustLib
+  Future<void> storeElection({required Election election}) => RustLib
       .instance
       .api
-      .crateApiAppAppSaveElection(that: this, election: election);
+      .crateApiAppAppStoreElection(that: this, election: election);
 }
