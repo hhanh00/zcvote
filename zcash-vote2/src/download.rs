@@ -1,15 +1,20 @@
 use prost::Message;
 use sqlx::{Row, SqliteConnection, sqlite::SqliteRow};
-use tonic::{transport::{Channel, ClientTlsConfig}, Request};
+use tonic::{
+    Request,
+    transport::{Channel, ClientTlsConfig},
+};
 
 use crate::{
     Client, IntoAnyhow, ProgressReporter, VoteResult,
+    legacy::LegacyElection,
     lwd_prc::{BlockId, BlockRange, CompactBlock},
 };
 
 pub async fn connect(lwd: String) -> VoteResult<Client> {
     let tls_config = ClientTlsConfig::new().with_enabled_roots();
-    let channel = Channel::from_shared(lwd).anyhow()?
+    let channel = Channel::from_shared(lwd)
+        .anyhow()?
         .tls_config(tls_config)
         .unwrap();
     let client = Client::connect(channel).await.unwrap();
@@ -125,6 +130,19 @@ pub async fn extract_commitments<PR: ProgressReporter>(
         }
     }
     Ok(())
+}
+
+pub async fn fetch_election(
+    url: &str,
+    id: &str,
+) -> VoteResult<LegacyElection> {
+    let election = reqwest::get(&format!("{url}/election/{id}"))
+        .await
+        .anyhow()?
+        .json::<LegacyElection>()
+        .await
+        .anyhow()?;
+    Ok(election)
 }
 
 #[cfg(test)]

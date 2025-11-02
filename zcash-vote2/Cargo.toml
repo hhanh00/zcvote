@@ -12,6 +12,7 @@ serde_with = { workspace = true }
 sqlx = { workspace = true }
 thiserror = { workspace = true }
 tokio = { workspace = true }
+futures-util = { workspace = true }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true }
 
@@ -23,12 +24,14 @@ tonic = { workspace = true }
 tonic-prost = { workspace = true }
 num-integer = { workspace = true }
 hex = { workspace = true }
+reqwest = { workspace = true }
 
 halo2_gadgets = { workspace = true }
 halo2_proofs = { workspace = true }
 pasta_curves = { workspace = true }
 incrementalmerkletree = { workspace = true }
 orchard = { workspace = true }
+zip32 = { workspace = true }
 
 zcash_address = { workspace = true }
 zcash_encoding = { workspace = true }

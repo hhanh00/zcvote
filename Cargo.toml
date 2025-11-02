@@ -13,20 +13,23 @@ hex = "0.4.3"
 rand_core = "0.6.4"
 
 env_logger = "0.11.8"
-orchard = { version = "0.3.0", features = ["vote"] }
+orchard = { version = "0.11.0", features = ["vote"] }
 serde = "1.0.228"
 serde_json = "1.0.145"
 serde_with = "3.15.0"
 sqlx = {version = "0.8.6", features = ["runtime-tokio", "sqlite", "macros", "migrate"]}
 thiserror = "2.0.17"
 tokio = "1.48.0"
+futures-util = "0.3"
 tracing = "0.1.41"
 tracing-subscriber = {version = "0.3.20", features = ["env-filter", "fmt", "json"]}
+zip32 = "0.2"
 
 tonic = { version = "0.14.2", features = ["tls-webpki-roots", "tls-ring"] }
 prost = "0.14.1"
 tonic-prost = "0.14.2"
 rustls = "0.23.31"
+reqwest = {version = "0.12.24", features = ["json", "rustls-tls-webpki-roots"]}
 
 bip39 = "2.2.0"
 bech32 = "0.11"
@@ -35,7 +38,7 @@ num-integer = "0.1"
 halo2_gadgets = "0.3.1"
 halo2_proofs = "0.3.1"
 pasta_curves = "0.5.1"
-incrementalmerkletree = "0.3"
+incrementalmerkletree = "0.8"
 
 zcash_address = "0.10.0"
 zcash_encoding = "0.3.0"
@@ -46,6 +49,7 @@ zcash_proofs = "0.26.0"
 zcash_protocol = "0.7.0"
 
 [patch.crates-io]
-orchard = {git = "https://github.com/hhanh00/orchard.git", rev="7a0f18a6bde1bbe0bb703026880ad566076b0b16"}
-halo2_gadgets = { git = "https://github.com/zcash/halo2.git", rev = "642924d614305d882cc122739c59144109f4bd3f" }
-halo2_proofs = { git = "https://github.com/zcash/halo2.git", rev = "642924d614305d882cc122739c59144109f4bd3f" }
+orchard = {git = "https://github.com/hhanh00/orchard.git", rev="5928c19877ad9b424235f3d7f9aa60cb3ba8a051"}
+#orchard = {path = "../orchard"}
+halo2_gadgets = { git = "https://github.com/zcash/halo2.git", rev = "2308caf68c48c02468b66cfc452dad54e355e32f" }
+halo2_proofs = { git = "https://github.com/zcash/halo2.git", rev = "2308caf68c48c02468b66cfc452dad54e355e32f" }

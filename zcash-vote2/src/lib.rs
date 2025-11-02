@@ -4,9 +4,13 @@ use tonic::transport::Channel;
 pub mod error;
 pub mod seed;
 pub mod db;
+pub mod legacy;
 pub mod data;
 pub mod download;
 pub mod trees;
+pub mod sync;
+pub mod pb;
+pub mod builder;
 
 #[path = "cash.z.wallet.sdk.rpc.rs"]
 pub mod lwd_prc;
