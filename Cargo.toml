@@ -49,7 +49,7 @@ zcash_proofs = "0.26.0"
 zcash_protocol = "0.7.0"
 
 [patch.crates-io]
-#orchard = {git = "https://github.com/hhanh00/orchard.git", rev="806a6e05685ac389b45b5dbfa9761df5063d5bd9"}
-orchard = {path = "../orchard"}
+orchard = {git = "https://github.com/hhanh00/orchard.git", rev="5928c19877ad9b424235f3d7f9aa60cb3ba8a051"}
+#orchard = {path = "../orchard"}
 halo2_gadgets = { git = "https://github.com/zcash/halo2.git", rev = "2308caf68c48c02468b66cfc452dad54e355e32f" }
 halo2_proofs = { git = "https://github.com/zcash/halo2.git", rev = "2308caf68c48c02468b66cfc452dad54e355e32f" }
