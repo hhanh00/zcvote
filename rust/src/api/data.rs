@@ -1,7 +1,14 @@
 // These are FRB friendly structs
 
+use anyhow::Result;
 use flutter_rust_bridge::frb;
+use sqlx::SqliteConnection;
 use struct_convert::Convert;
+use tracing::info;
+use zcash_vote2::download::{connect, download_blocks};
+pub use zcash_vote2::legacy::LegacyElection;
+
+use crate::{api::app::App, frb_generated::StreamSink};
 
 #[derive(Convert)]
 #[convert(from = "zcash_vote2::data::CandidateChoice")]
@@ -73,34 +80,26 @@ impl std::convert::From<Election> for zcash_vote2::data::Election {
     }
 }
 
-// impl From<Election> for zcash_vote2::data::Election {
-//     fn from(value: Election) -> Self {
-//         zcash_vote2::data::Election {
-//             name: value.name,
-//             seed: value.seed,
-//             start_height: value.start_height,
-//             end_height: value.end_height,
-//             questions: value.questions.into_iter().map(|q| q.into()).collect(),
-//             signature_required: value.signature_required,
-//             ..Default::default()
-//         }
-//     }
-// }
+#[frb(opaque)]
+pub struct OldElection {
+    pub(crate) inner: LegacyElection,
+}
 
-// impl From<Question> for zcash_vote2::data::Question {
-//     fn from(value: Question) -> Self {
-//         zcash_vote2::data::Question {
-//             question: value.question,
-//             choices: value.choices.into_iter().map(|c| c.into()).collect(),
-//         }
-//     }
-// }
+impl OldElection {
+    #[frb(sync)]
+    pub fn start(&self) -> u32 { self.inner.start_height }
+    #[frb(sync)]
+    pub fn end(&self) -> u32 { self.inner.end_height }
 
-// impl From<CandidateChoice> for zcash_vote2::data::CandidateChoice {
-//     fn from(value: CandidateChoice) -> Self {
-//         zcash_vote2::data::CandidateChoice {
-//             address: value.address,
-//             choice: value.choice,
-//         }
-//     }
-// }
+    pub async fn download_blocks(&self, app: &App, url: &str, progress_reporter: StreamSink<String>) -> Result<()> {
+        let mut connection = app.db_connect().await?;
+        let start = self.inner.start_height;
+        let end = self.inner.end_height;
+        info!("download blocks {} {}", start, end);
+        let mut client = connect(url.to_string()).await?;
+
+        download_blocks(&mut client, &mut *connection, start, end, &progress_reporter).await?;
+
+        Ok(())
+    }
+}

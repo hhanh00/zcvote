@@ -7,11 +7,16 @@ import '../frb_generated.dart';
 import 'data.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 
-// These functions are ignored because they are not marked as `pub`: `default_layer`, `env_layer`
+// These functions are ignored because they are not marked as `pub`: `db_connect`, `default_layer`, `env_layer`
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `submit`
 
 // Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<App>>
 abstract class App implements RustOpaqueInterface {
+  Future<OldElection> downloadElection({
+    required String url,
+    required String id,
+  });
+
   Stream<String> finalize({required Election election, required String lwd});
 
   Future<List<Election>> listElectionDefs();
@@ -20,6 +25,12 @@ abstract class App implements RustOpaqueInterface {
       RustLib.instance.api.crateApiAppAppNew(dbName: dbName);
 
   Future<Election> newElection({required String name});
+
+  Future<void> scan({
+    required String seed,
+    required int start,
+    required int end,
+  });
 
   Future<void> storeElection({required Election election});
 }

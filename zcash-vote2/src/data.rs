@@ -1,14 +1,14 @@
 use bech32::{Bech32m, Hrp};
 use bip39::Mnemonic;
 use orchard::{
-    keys::{FullViewingKey, Scope, SpendingKey},
-    vote::{Frontier, OrchardHash},
+    Address, keys::{FullViewingKey, Scope, SpendingKey}, vote::{Frontier, OrchardHash},
 };
 use serde::{Deserialize, Serialize};
 use sqlx::SqliteConnection;
+use zip32::AccountId;
 
 use crate::{
-    db::{list_cmxs, list_nfs, store_election}, download::{download_blocks, extract_commitments}, trees::{compute_merkle_tree, make_nfs_ranges, orchard_hash}, Client, IntoAnyhow, ProgressReporter, VoteError, VoteResult
+    Client, IntoAnyhow, ProgressReporter, VoteError, VoteResult, db::{list_cmxs, list_nfs, store_election}, download::{download_blocks, extract_commitments}, tiu, trees::{compute_merkle_tree, make_nfs_ranges, orchard_hash}
 };
 
 #[derive(Clone, Serialize, Deserialize, PartialEq, Debug)]
@@ -142,7 +142,7 @@ impl Election {
 pub fn derive_vote_key(seed: &str, i: u32, j: u32) -> VoteResult<SpendingKey> {
     let seed = Mnemonic::parse(seed).anyhow()?;
     let seed = seed.to_seed("VoteOrchard");
-    let sk = SpendingKey::from_zip32_seed(&seed, i, j).unwrap();
+    let sk = SpendingKey::from_zip32_seed(&seed, i, tiu!(j)).unwrap();
     Ok(sk)
 }
 

@@ -1,6 +1,6 @@
 use anyhow::Result;
 use flutter_rust_bridge::frb;
-use sqlx::{SqlitePool, sqlite::SqliteConnectOptions};
+use sqlx::{Sqlite, SqlitePool, pool::PoolConnection, sqlite::SqliteConnectOptions};
 use tokio::runtime::Builder;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::{
@@ -11,7 +11,7 @@ use tracing_subscriber::{
 };
 use zcash_vote2::{db::{create_db, get_election, list_election_defs, new_election, store_election}, download::connect, ProgressReporter};
 
-use crate::{api::data::Election, frb_generated::StreamSink};
+use crate::{api::data::{Election, OldElection}, frb_generated::StreamSink};
 
 #[frb(opaque)]
 pub struct App {
@@ -62,6 +62,21 @@ impl App {
         let client = connect(lwd).await?;
         election.finalize(connection, client, progress_reporter).await?;
         Ok(())
+    }
+
+    pub async fn download_election(&self, url: &str, id: &str) -> Result<OldElection> {
+        let election = zcash_vote2::download::fetch_election(url, id).await?;
+        Ok(OldElection { inner: election })
+    }
+
+    pub async fn scan(&self, seed: String, start: u32, end: u32) -> Result<()> {
+        let mut connection = self.db_connect().await?;
+        zcash_vote2::sync::scan(&mut connection, &seed, 0, start, end, &()).await?;
+        Ok(())
+    }
+
+    pub(crate) async fn db_connect(&self) -> Result<PoolConnection<Sqlite>> {
+        Ok(self.pool.acquire().await?)
     }
 }
 

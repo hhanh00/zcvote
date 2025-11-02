@@ -30,6 +30,34 @@ pub async fn create_db(connection: &mut SqliteConnection) -> VoteResult<()> {
     )
     .execute(&mut *connection)
     .await?;
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS notes(
+        id_note INTEGER PRIMARY KEY,
+        height INTEGER NOT NULL,
+        position INTEGER NOT NULL,
+        txid BLOB NOT NULL,
+        vout INTEGER NOT NULL,
+        nf BLOB NOT NULL,
+        rho BLOB NOT NULL,
+        diversifier BLOB NOT NULL,
+        rseed BLOB NOT NULL,
+        value INTEGER NOT NULL,
+        UNIQUE (position))",
+    )
+    .execute(&mut *connection)
+    .await?;
+    sqlx::query(
+        "CREATE TABLE IF NOT EXISTS spends(
+        id_note INTEGER PRIMARY KEY,
+        height INTEGER NOT NULL,
+        txid BLOB NOT NULL,
+        vin INTEGER NOT NULL,
+        value INTEGER NOT NULL)",
+    )
+    .execute(&mut *connection)
+    .await?;
+    // diversifier, value, position, rho, rseed, nf
+
     Ok(())
 }
 

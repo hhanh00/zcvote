@@ -4,6 +4,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:zcvote/client.dart';
 import 'package:zcvote/main.dart';
 import 'package:zcvote/model.dart';
 import 'package:zcvote/src/rust/api/data.dart';
@@ -24,16 +25,19 @@ class CreatePageState extends ConsumerState<CreatePage> {
         return Scaffold(
           appBar: AppBar(
             title: Text("Create Elections"),
-            actions: [IconButton(onPressed: onNew, icon: Icon(Icons.note_add))],
+            actions: [
+              IconButton(onPressed: onNew, icon: Icon(Icons.note_add)),
+              IconButton(onPressed: onSubmit, icon: Icon(Icons.send)),
+            ],
           ),
           body: ListView(
-          children: [
-            for (var v in value)
-              ListTile(
-                title: Text(v.name),
-                onTap: () => context.push("/create/edit", extra: v.name),
-              ),
-          ],
+            children: [
+              for (var v in value)
+                ListTile(
+                  title: Text(v.name),
+                  onTap: () => context.push("/create/edit", extra: v.name),
+                ),
+            ],
           ),
         );
       case AsyncValue(error: != null):
@@ -77,6 +81,10 @@ class CreatePageState extends ConsumerState<CreatePage> {
       ref.invalidate(listElectionsProvider);
     }
   }
+
+  void onSubmit() async {
+    await submitVote(ref);
+  }
 }
 
 class CreateEditPage extends ConsumerStatefulWidget {
@@ -100,13 +108,9 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
         return Scaffold(
           appBar: AppBar(
             actions: [
-              locked ? IconButton(
-                onPressed: onUnlock,
-                icon: Icon(Icons.lock_open),
-              ) : IconButton(
-                onPressed: onFinalize,
-                icon: Icon(Icons.flag),
-              ),
+              locked
+                  ? IconButton(onPressed: onUnlock, icon: Icon(Icons.lock_open))
+                  : IconButton(onPressed: onFinalize, icon: Icon(Icons.flag)),
             ],
           ),
           body: SingleChildScrollView(
@@ -178,10 +182,12 @@ class CreateEditState extends ConsumerState<CreateEditPage> {
     // TODO: Add confirmation
     final electionNotifier = ref.read(electionProvider(widget.name).notifier);
     final progress = electionNotifier.finalize();
-    progress.listen((m) => logger.i(m),
-    onDone: () {
-      ref.invalidate(listElectionsProvider);
-    });
+    progress.listen(
+      (m) => logger.i(m),
+      onDone: () {
+        ref.invalidate(listElectionsProvider);
+      },
+    );
   }
 }
 
@@ -248,31 +254,32 @@ class QuestionListFormFieldState extends State<QuestionListFormField> {
                         ],
                       ),
                     ),
-                    if (!widget.readOnly) SizedBox(
-                      width: 40,
-                      child: Column(
-                        children: [
-                          IconButton(
-                            icon: Icon(Icons.add),
-                            onPressed: selected == null ? onAdd : null,
-                          ),
-                          Gap(8),
-                          IconButton(
-                            icon: Icon(Icons.arrow_upward),
-                            onPressed: selected != null ? onUp : null,
-                          ),
-                          IconButton(
-                            icon: Icon(Icons.arrow_downward),
-                            onPressed: selected != null ? onDown : null,
-                          ),
-                          Divider(),
-                          IconButton(
-                            icon: Icon(Icons.delete),
-                            onPressed: selected != null ? onDelete : null,
-                          ),
-                        ],
+                    if (!widget.readOnly)
+                      SizedBox(
+                        width: 40,
+                        child: Column(
+                          children: [
+                            IconButton(
+                              icon: Icon(Icons.add),
+                              onPressed: selected == null ? onAdd : null,
+                            ),
+                            Gap(8),
+                            IconButton(
+                              icon: Icon(Icons.arrow_upward),
+                              onPressed: selected != null ? onUp : null,
+                            ),
+                            IconButton(
+                              icon: Icon(Icons.arrow_downward),
+                              onPressed: selected != null ? onDown : null,
+                            ),
+                            Divider(),
+                            IconButton(
+                              icon: Icon(Icons.delete),
+                              onPressed: selected != null ? onDelete : null,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),

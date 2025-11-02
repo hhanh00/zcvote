@@ -4,11 +4,21 @@
 // ignore_for_file: invalid_use_of_internal_member, unused_import, unnecessary_import
 
 import '../frb_generated.dart';
+import 'app.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:freezed_annotation/freezed_annotation.dart' hide protected;
 part 'data.freezed.dart';
 
 // These function are ignored because they are on traits that is not defined in current crate (put an empty `#[frb]` on it to unignore): `from`, `from`, `from`, `from`, `from`, `into`
+
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<OldElection>>
+abstract class OldElection implements RustOpaqueInterface {
+  Stream<String> downloadBlocks({required App app, required String url});
+
+  int end();
+
+  int start();
+}
 
 @freezed
 sealed class CandidateChoice with _$CandidateChoice {
